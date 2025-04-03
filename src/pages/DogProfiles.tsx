@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Plus, Upload, FileText, Image, Video, File } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -23,7 +24,6 @@ import { Input } from '@/components/ui/input';
 import { toast } from "sonner";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
-import AppWrapper from '@/components/AppWrapper';
 
 const DogProfiles = () => {
   const { dogs } = useDogs();
