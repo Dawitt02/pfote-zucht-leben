@@ -14,26 +14,28 @@ import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/dogs" element={<DogProfiles />} />
-          <Route path="/dogs/add" element={<AddDog />} />
-          <Route path="/dogs/:id/documents" element={<DogProfiles />} />
-          <Route path="/breeding" element={<Breeding />} />
-          <Route path="/health" element={<Health />} />
-          <Route path="/community" element={<Community />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
-    </TooltipProvider>
-  </QueryClientProvider>
-);
+const App = () => {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <Routes>
+            <Route path="/" element={<Index />} />
+            <Route path="/dogs" element={<DogProfiles />} />
+            <Route path="/dogs/add" element={<AddDog />} />
+            <Route path="/dogs/:id/documents" element={<DogProfiles />} />
+            <Route path="/breeding" element={<Breeding />} />
+            <Route path="/health" element={<Health />} />
+            <Route path="/community" element={<Community />} />
+            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </BrowserRouter>
+      </TooltipProvider>
+    </QueryClientProvider>
+  );
+};
 
 export default App;
