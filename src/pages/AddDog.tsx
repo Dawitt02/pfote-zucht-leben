@@ -1,4 +1,3 @@
-
 import React, { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -22,9 +21,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import Navbar from '@/components/Navbar';
 
-// Define form validation schema
 const dogFormSchema = z.object({
-  // Basic Information
   name: z.string().min(2, { message: "Der Name muss mindestens 2 Zeichen lang sein." }),
   breed: z.string().min(2, { message: "Die Rasse muss angegeben werden." }),
   age: z.string().min(1, { message: "Bitte gib das Alter an." }),
@@ -32,35 +29,29 @@ const dogFormSchema = z.object({
     required_error: "Bitte wähle das Geschlecht aus." 
   }),
   
-  // Official Identification
   fullName: z.string().optional(),
   registrationNumber: z.string().optional(),
   chipNumber: z.string().optional(),
   
-  // Pedigree & Genetics
   pedigree: z.string().optional(),
   geneticTestResults: z.string().optional(),
   inbreedingCoefficient: z.string().optional(),
   
-  // Health Information
   healthStatus: z.string().optional(),
   vaccinationHistory: z.string().optional(),
   weight: z.string().optional(),
   size: z.string().optional(),
 
-  // Breeding Information
   breedingStatus: z.string().optional(),
   cycleInformation: z.string().optional(),
   breedingHistory: z.string().optional(),
   litterInformation: z.string().optional(),
   breedingRestrictions: z.string().optional(),
 
-  // Performance & Character
   achievements: z.string().optional(),
   exhibitionResults: z.string().optional(),
   temperamentAssessment: z.string().optional(),
 
-  // Notes & Media
   notes: z.string().optional(),
   imageUrl: z.string().optional(),
   hasStandardPhotos: z.boolean().optional(),
@@ -73,7 +64,6 @@ const AddDog = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   
-  // Default values for the form
   const defaultValues: Partial<DogFormValues> = {
     name: "",
     breed: "",
@@ -82,7 +72,7 @@ const AddDog = () => {
     breedingStatus: "",
     achievements: "",
     notes: "",
-    imageUrl: "", // We'll let the user upload an image
+    imageUrl: "",
     hasStandardPhotos: false,
   };
   
@@ -101,19 +91,13 @@ const AddDog = () => {
   };
 
   function onSubmit(data: DogFormValues) {
-    // Validate if image has been uploaded
     if (!data.imageUrl) {
       toast.error("Bitte lade ein Bild des Hundes hoch.");
       return;
     }
 
-    // Here you would typically save the data to your database
     console.log("Form submitted:", data);
-    
-    // Show success message
     toast.success("Hund erfolgreich hinzugefügt!");
-    
-    // Navigate back to dogs page
     setTimeout(() => navigate('/dogs'), 1500);
   }
 
@@ -135,7 +119,6 @@ const AddDog = () => {
 
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-              {/* Image upload section */}
               <div className="flex flex-col items-center mb-6">
                 <FormField
                   control={form.control}
@@ -170,7 +153,7 @@ const AddDog = () => {
                           onImageChange={handleImageChange}
                           previewUrl={imagePreview || undefined}
                           {...field}
-                          value={undefined} // Override the value from react-hook-form
+                          value={undefined}
                         />
                       </FormControl>
                       <FormDescription className="text-center">
@@ -181,10 +164,8 @@ const AddDog = () => {
                   )}
                 />
               </div>
-              
-              {/* Accordion for categorized form fields */}
+
               <Accordion type="multiple" defaultValue={["basic-info"]} className="w-full">
-                {/* Basic Information */}
                 <AccordionItem value="basic-info">
                   <AccordionTrigger className="text-lg font-semibold">
                     <div className="flex items-center">
@@ -264,7 +245,6 @@ const AddDog = () => {
                   </AccordionContent>
                 </AccordionItem>
 
-                {/* Official Identification */}
                 <AccordionItem value="official-id">
                   <AccordionTrigger className="text-lg font-semibold">
                     <div className="flex items-center">
@@ -326,7 +306,6 @@ const AddDog = () => {
                   </AccordionContent>
                 </AccordionItem>
 
-                {/* Pedigree & Genetics */}
                 <AccordionItem value="pedigree-genetics">
                   <AccordionTrigger className="text-lg font-semibold">
                     <div className="flex items-center">
@@ -396,7 +375,6 @@ const AddDog = () => {
                   </AccordionContent>
                 </AccordionItem>
 
-                {/* Health Information */}
                 <AccordionItem value="health-info">
                   <AccordionTrigger className="text-lg font-semibold">
                     <div className="flex items-center">
@@ -479,7 +457,6 @@ const AddDog = () => {
                   </AccordionContent>
                 </AccordionItem>
 
-                {/* Breeding Information */}
                 <AccordionItem value="breeding-info">
                   <AccordionTrigger className="text-lg font-semibold">
                     <div className="flex items-center">
@@ -602,7 +579,6 @@ const AddDog = () => {
                   </AccordionContent>
                 </AccordionItem>
 
-                {/* Performance & Character */}
                 <AccordionItem value="performance-character">
                   <AccordionTrigger className="text-lg font-semibold">
                     <div className="flex items-center">
@@ -676,7 +652,6 @@ const AddDog = () => {
                   </AccordionContent>
                 </AccordionItem>
 
-                {/* Notes & Additional Information */}
                 <AccordionItem value="notes-media">
                   <AccordionTrigger className="text-lg font-semibold">
                     <div className="flex items-center">
@@ -728,31 +703,32 @@ const AddDog = () => {
                   </AccordionContent>
                 </AccordionItem>
               </Accordion>
-              
-              {/* Submit Button - Moved outside of accordion for always visibility */}
-              <div className="sticky bottom-20 bg-zucht-cream pt-4 pb-2 border-t border-gray-200 mt-6">
-                <div className="flex gap-4">
-                  <Button 
-                    type="submit" 
-                    className="flex-1 bg-zucht-amber hover:bg-zucht-amber/90"
-                  >
-                    <Save className="mr-2 h-4 w-4" />
-                    Hund speichern
-                  </Button>
-                  <Button 
-                    type="button" 
-                    variant="outline"
-                    className="flex-1"
-                    onClick={() => navigate('/dogs')}
-                  >
-                    Abbrechen
-                  </Button>
-                </div>
-              </div>
             </form>
           </Form>
         </div>
       </main>
+      
+      <div className="fixed bottom-20 left-0 right-0 bg-zucht-cream border-t border-gray-200 py-4 px-4 z-10">
+        <div className="flex gap-4 max-w-md mx-auto">
+          <Button 
+            type="submit" 
+            form="add-dog-form"
+            className="flex-1 bg-zucht-amber hover:bg-zucht-amber/90"
+          >
+            <Save className="mr-2 h-4 w-4" />
+            Hund speichern
+          </Button>
+          <Button 
+            type="button" 
+            variant="outline"
+            className="flex-1"
+            onClick={() => navigate('/dogs')}
+          >
+            Abbrechen
+          </Button>
+        </div>
+      </div>
+      
       <Navbar />
     </div>
   );
