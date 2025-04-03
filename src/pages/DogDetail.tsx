@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { 
@@ -15,7 +14,8 @@ import {
   Activity,
   Syringe,
   Medal,
-  File
+  File,
+  X
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Navbar from '@/components/Navbar';
@@ -44,10 +44,24 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { useToast } from "@/hooks/use-toast";
 
 const DogDetail = () => {
   const { id } = useParams<{ id: string }>();
   const [activeTab, setActiveTab] = useState('info');
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const { toast } = useToast();
 
   // Mock data - in a real app this would come from your state management or API
   const dogs = [
@@ -184,6 +198,7 @@ const DogDetail = () => {
   ];
 
   const dog = dogs.find(dog => dog.id === id);
+  const [editedDog, setEditedDog] = useState(dog);
 
   if (!dog) {
     return (
@@ -234,6 +249,25 @@ const DogDetail = () => {
     }
   };
 
+  const handleEditSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    toast({
+      title: "Änderungen gespeichert",
+      description: `Die Daten für ${editedDog?.name} wurden aktualisiert.`,
+    });
+    setIsEditDialogOpen(false);
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    if (editedDog) {
+      setEditedDog({
+        ...editedDog,
+        [name]: value,
+      });
+    }
+  };
+
   return (
     <div className="flex flex-col h-full bg-zucht-cream">
       <main className="flex-1 overflow-auto pb-16">
@@ -252,58 +286,137 @@ const DogDetail = () => {
             <div className="w-full md:w-1/3">
               <div className="relative rounded-lg overflow-hidden h-64">
                 <img 
-                  src={dog.imageUrl} 
-                  alt={`${dog.name}, a ${dog.breed} dog`}
+                  src={dog?.imageUrl} 
+                  alt={`${dog?.name}, a ${dog?.breed} dog`}
                   className="w-full h-full object-cover" 
                 />
-                <div className={`absolute top-2 right-2 rounded-full w-8 h-8 flex items-center justify-center ${dog.gender === 'male' ? 'bg-zucht-blue text-white' : 'bg-zucht-amber text-white'}`}>
-                  {dog.gender === 'male' ? '♂' : '♀'}
+                <div className={`absolute top-2 right-2 rounded-full w-8 h-8 flex items-center justify-center ${dog?.gender === 'male' ? 'bg-zucht-blue text-white' : 'bg-zucht-amber text-white'}`}>
+                  {dog?.gender === 'male' ? '♂' : '♀'}
                 </div>
               </div>
             </div>
             
             <div className="w-full md:w-2/3">
               <div className="flex justify-between items-start">
-                <h1 className="text-2xl md:text-3xl font-bold">{dog.name}</h1>
-                <Button size="sm" variant="outline" className="bg-zucht-blue text-white hover:bg-zucht-blue/90">
-                  <Edit className="h-4 w-4 mr-2" /> Bearbeiten
-                </Button>
+                <h1 className="text-2xl md:text-3xl font-bold">{dog?.name}</h1>
+                <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+                  <DialogTrigger asChild>
+                    <Button size="sm" variant="outline" className="bg-zucht-blue text-white hover:bg-zucht-blue/90">
+                      <Edit className="h-4 w-4 mr-2" /> Bearbeiten
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="sm:max-w-[425px]">
+                    <DialogHeader>
+                      <DialogTitle>Hundeprofil bearbeiten</DialogTitle>
+                      <DialogDescription>
+                        Ändern Sie die Informationen für {dog?.name}. Klicken Sie auf Speichern, wenn Sie fertig sind.
+                      </DialogDescription>
+                    </DialogHeader>
+                    <form onSubmit={handleEditSubmit}>
+                      <div className="grid gap-4 py-4">
+                        <div className="grid grid-cols-4 items-center gap-4">
+                          <Label htmlFor="name" className="text-right">
+                            Name
+                          </Label>
+                          <Input
+                            id="name"
+                            name="name"
+                            value={editedDog?.name}
+                            onChange={handleInputChange}
+                            className="col-span-3"
+                          />
+                        </div>
+                        <div className="grid grid-cols-4 items-center gap-4">
+                          <Label htmlFor="breed" className="text-right">
+                            Rasse
+                          </Label>
+                          <Input
+                            id="breed"
+                            name="breed"
+                            value={editedDog?.breed}
+                            onChange={handleInputChange}
+                            className="col-span-3"
+                          />
+                        </div>
+                        <div className="grid grid-cols-4 items-center gap-4">
+                          <Label htmlFor="age" className="text-right">
+                            Alter
+                          </Label>
+                          <Input
+                            id="age"
+                            name="age"
+                            value={editedDog?.age}
+                            onChange={handleInputChange}
+                            className="col-span-3"
+                          />
+                        </div>
+                        <div className="grid grid-cols-4 items-center gap-4">
+                          <Label htmlFor="weight" className="text-right">
+                            Gewicht
+                          </Label>
+                          <Input
+                            id="weight"
+                            name="weight"
+                            value={editedDog?.weight}
+                            onChange={handleInputChange}
+                            className="col-span-3"
+                          />
+                        </div>
+                        <div className="grid grid-cols-4 items-center gap-4">
+                          <Label htmlFor="color" className="text-right">
+                            Farbe
+                          </Label>
+                          <Input
+                            id="color"
+                            name="color"
+                            value={editedDog?.color}
+                            onChange={handleInputChange}
+                            className="col-span-3"
+                          />
+                        </div>
+                      </div>
+                      <DialogFooter>
+                        <Button type="submit">Speichern</Button>
+                      </DialogFooter>
+                    </form>
+                  </DialogContent>
+                </Dialog>
               </div>
               
-              <p className="text-lg text-zucht-brown/80 mb-3">{dog.breed}</p>
+              <p className="text-lg text-zucht-brown/80 mb-3">{dog?.breed}</p>
               
               <div className="grid grid-cols-2 gap-4 mb-3">
                 <div className="flex items-center">
                   <Calendar className="h-4 w-4 mr-2 text-zucht-blue" />
-                  <span>Alter: {dog.age}</span>
+                  <span>Alter: {dog?.age}</span>
                 </div>
                 
                 <div className="flex items-center">
                   <Calendar className="h-4 w-4 mr-2 text-zucht-blue" />
-                  <span>Geboren: {dog.birthDate}</span>
+                  <span>Geboren: {dog?.birthDate}</span>
                 </div>
                 
-                {dog.breedingStatus && (
+                {dog?.breedingStatus && (
                   <div className="flex items-center">
                     <Heart className="h-4 w-4 mr-2 text-zucht-amber" />
-                    <span className={`px-2 py-1 rounded-full text-xs ${getStatusColor(dog.breedingStatus)}`}>
-                      {dog.breedingStatus}
+                    <span className={`px-2 py-1 rounded-full text-xs ${getStatusColor(dog?.breedingStatus)}`}>
+                      {dog?.breedingStatus}
                     </span>
                   </div>
                 )}
                 
-                {dog.chip && (
+                {dog?.chip && (
                   <div className="flex items-center">
                     <Dog className="h-4 w-4 mr-2 text-zucht-brown" />
-                    <span>Chip: {dog.chip}</span>
+                    <span>Chip: {dog?.chip}</span>
                   </div>
                 )}
               </div>
               
-              {dog.achievements && dog.achievements.length > 0 && (
+              {dog?.achievements && dog?.achievements.length > 0 && (
                 <div className="mb-3">
                   <div className="flex flex-wrap gap-1">
-                    {dog.achievements.map((achievement, index) => (
+                    {dog?.achievements.map((achievement, index) => (
                       <div key={index} className="flex items-center text-xs bg-zucht-green/10 text-zucht-green px-2 py-1 rounded-full">
                         <Award className="h-3 w-3 mr-1" />
                         <span>{achievement}</span>
@@ -336,48 +449,48 @@ const DogDetail = () => {
                     <TableBody>
                       <TableRow>
                         <TableCell className="font-medium w-1/3">Rasse</TableCell>
-                        <TableCell>{dog.breed}</TableCell>
+                        <TableCell>{dog?.breed}</TableCell>
                       </TableRow>
                       <TableRow>
                         <TableCell className="font-medium">Geschlecht</TableCell>
-                        <TableCell>{dog.gender === 'male' ? 'männlich' : 'weiblich'}</TableCell>
+                        <TableCell>{dog?.gender === 'male' ? 'männlich' : 'weiblich'}</TableCell>
                       </TableRow>
-                      {dog.color && (
+                      {dog?.color && (
                         <TableRow>
                           <TableCell className="font-medium">Farbe</TableCell>
-                          <TableCell>{dog.color}</TableCell>
+                          <TableCell>{dog?.color}</TableCell>
                         </TableRow>
                       )}
-                      {dog.weight && (
+                      {dog?.weight && (
                         <TableRow>
                           <TableCell className="font-medium">Gewicht</TableCell>
-                          <TableCell>{dog.weight}</TableCell>
+                          <TableCell>{dog?.weight}</TableCell>
                         </TableRow>
                       )}
-                      {dog.height && (
+                      {dog?.height && (
                         <TableRow>
                           <TableCell className="font-medium">Widerristhöhe</TableCell>
-                          <TableCell>{dog.height}</TableCell>
+                          <TableCell>{dog?.height}</TableCell>
                         </TableRow>
                       )}
                       <TableRow>
                         <TableCell className="font-medium">Zuchtstatus</TableCell>
-                        <TableCell>{dog.breedingStatus}</TableCell>
+                        <TableCell>{dog?.breedingStatus}</TableCell>
                       </TableRow>
                       <TableRow>
                         <TableCell className="font-medium">Geburtsdatum</TableCell>
-                        <TableCell>{dog.birthDate}</TableCell>
+                        <TableCell>{dog?.birthDate}</TableCell>
                       </TableRow>
                       <TableRow>
                         <TableCell className="font-medium">Chip-Nr.</TableCell>
-                        <TableCell>{dog.chip}</TableCell>
+                        <TableCell>{dog?.chip}</TableCell>
                       </TableRow>
                     </TableBody>
                   </Table>
                 </CardContent>
               </Card>
               
-              {dog.parents && (
+              {dog?.parents && (
                 <Card>
                   <CardHeader>
                     <CardTitle className="text-lg">Abstammung</CardTitle>
@@ -387,11 +500,11 @@ const DogDetail = () => {
                       <TableBody>
                         <TableRow>
                           <TableCell className="font-medium w-1/3">Vater</TableCell>
-                          <TableCell>{dog.parents.father}</TableCell>
+                          <TableCell>{dog?.parents.father}</TableCell>
                         </TableRow>
                         <TableRow>
                           <TableCell className="font-medium">Mutter</TableCell>
-                          <TableCell>{dog.parents.mother}</TableCell>
+                          <TableCell>{dog?.parents.mother}</TableCell>
                         </TableRow>
                       </TableBody>
                     </Table>
@@ -399,14 +512,14 @@ const DogDetail = () => {
                 </Card>
               )}
               
-              {dog.achievements && dog.achievements.length > 0 && (
+              {dog?.achievements && dog?.achievements.length > 0 && (
                 <Card>
                   <CardHeader>
                     <CardTitle className="text-lg">Leistungen & Auszeichnungen</CardTitle>
                   </CardHeader>
                   <CardContent>
                     <ul className="space-y-2">
-                      {dog.achievements.map((achievement, index) => (
+                      {dog?.achievements.map((achievement, index) => (
                         <li key={index} className="flex items-center">
                           <Award className="h-4 w-4 mr-2 text-zucht-amber" />
                           <span>{achievement}</span>
@@ -420,7 +533,7 @@ const DogDetail = () => {
             
             {/* Gesundheit Tab */}
             <TabsContent value="health" className="space-y-4 py-4">
-              {dog.healthTests && dog.healthTests.length > 0 && (
+              {dog?.healthTests && dog?.healthTests.length > 0 && (
                 <Card>
                   <CardHeader>
                     <CardTitle className="text-lg">Gesundheitsuntersuchungen</CardTitle>
@@ -436,7 +549,7 @@ const DogDetail = () => {
                         </TableRow>
                       </TableHeader>
                       <TableBody>
-                        {dog.healthTests.map((test, index) => (
+                        {dog?.healthTests.map((test, index) => (
                           <TableRow key={index}>
                             <TableCell className="font-medium">{test.name}</TableCell>
                             <TableCell>{test.date}</TableCell>
@@ -454,7 +567,7 @@ const DogDetail = () => {
                 </Card>
               )}
               
-              {dog.geneticTests && dog.geneticTests.length > 0 && (
+              {dog?.geneticTests && dog?.geneticTests.length > 0 && (
                 <Card>
                   <CardHeader>
                     <CardTitle className="text-lg">Genetische Tests</CardTitle>
@@ -470,7 +583,7 @@ const DogDetail = () => {
                         </TableRow>
                       </TableHeader>
                       <TableBody>
-                        {dog.geneticTests.map((test, index) => (
+                        {dog?.geneticTests.map((test, index) => (
                           <TableRow key={index}>
                             <TableCell className="font-medium">{test.name}</TableCell>
                             <TableCell>{test.date}</TableCell>
@@ -488,7 +601,7 @@ const DogDetail = () => {
                 </Card>
               )}
               
-              {dog.vaccinations && dog.vaccinations.length > 0 && (
+              {dog?.vaccinations && dog?.vaccinations.length > 0 && (
                 <Card>
                   <CardHeader>
                     <CardTitle className="text-lg">Impfungen</CardTitle>
@@ -504,7 +617,7 @@ const DogDetail = () => {
                         </TableRow>
                       </TableHeader>
                       <TableBody>
-                        {dog.vaccinations.map((vaccination, index) => (
+                        {dog?.vaccinations.map((vaccination, index) => (
                           <TableRow key={index}>
                             <TableCell className="font-medium">{vaccination.name}</TableCell>
                             <TableCell>{vaccination.date}</TableCell>
@@ -532,8 +645,8 @@ const DogDetail = () => {
                 <CardContent>
                   <div className="flex items-center mb-4">
                     <Heart className="h-5 w-5 mr-2 text-zucht-amber" />
-                    <span className={`px-2 py-1 rounded-full ${getStatusColor(dog.breedingStatus)}`}>
-                      {dog.breedingStatus}
+                    <span className={`px-2 py-1 rounded-full ${getStatusColor(dog?.breedingStatus)}`}>
+                      {dog?.breedingStatus}
                     </span>
                   </div>
                   
@@ -561,7 +674,7 @@ const DogDetail = () => {
             
             {/* Dokumente Tab */}
             <TabsContent value="documents" className="space-y-4 py-4">
-              {dog.documents && dog.documents.length > 0 && (
+              {dog?.documents && dog?.documents.length > 0 && (
                 <Card>
                   <CardHeader>
                     <CardTitle className="text-lg">Dokumente</CardTitle>
@@ -577,7 +690,7 @@ const DogDetail = () => {
                         </TableRow>
                       </TableHeader>
                       <TableBody>
-                        {dog.documents.map((doc, index) => (
+                        {dog?.documents.map((doc, index) => (
                           <TableRow key={index}>
                             <TableCell className="font-medium">
                               <div className="flex items-center">
@@ -617,11 +730,11 @@ const DogDetail = () => {
             
             {/* Medien Tab */}
             <TabsContent value="media" className="space-y-4 py-4">
-              {dog.media && dog.media.length > 0 && (
+              {dog?.media && dog?.media.length > 0 && (
                 <>
                   <h3 className="text-lg font-medium mb-4">Fotos & Videos</h3>
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                    {dog.media.map((item, index) => (
+                    {dog?.media.map((item, index) => (
                       <div key={index} className="border rounded-lg overflow-hidden bg-white">
                         <div className="h-40 bg-gray-100 flex items-center justify-center">
                           {item.fileType === 'jpg' || item.fileType === 'png' ? (
