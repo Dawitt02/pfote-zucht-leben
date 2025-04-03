@@ -384,17 +384,23 @@ export const DogProvider = ({ children }: { children: ReactNode }) => {
     const newLitter = { id, ...litter, puppies: [] };
     setLitters(prev => [...prev, newLitter]);
     
-    // Add birth expected event
+    // Add birth expected event (now exactly 60 days after breeding date)
     if (litter.breedingDate) {
       const birthExpectedDate = new Date(litter.breedingDate);
-      birthExpectedDate.setDate(birthExpectedDate.getDate() + 63); // 63 days of pregnancy
+      birthExpectedDate.setDate(birthExpectedDate.getDate() + 60); // Exactly 60 days of pregnancy
+      
+      // Get dog and stud names for better event display
+      const dogName = dogs.find(d => d.id === litter.dogId)?.name || 'Hündin';
+      const studName = litter.notes?.includes('Verpaarung mit') 
+        ? litter.notes.replace('Verpaarung mit ', '') 
+        : 'Rüde';
       
       addBreedingEvent({
         type: 'birthExpected',
-        title: 'Erwarteter Geburtstermin',
+        title: `Geburt erwartet: ${dogName}`,
         dogId: litter.dogId,
         date: birthExpectedDate,
-        notes: 'Berechneter Geburtstermin basierend auf dem Deckdatum',
+        notes: `Erwarteter Wurf von ${dogName} und ${studName} basierend auf dem Deckdatum`,
         color: '#D3E4FD' // Soft Blue
       });
     }
@@ -406,6 +412,30 @@ export const DogProvider = ({ children }: { children: ReactNode }) => {
     setLitters(prev => 
       prev.map(l => l.id === litter.id ? litter : l)
     );
+    
+    // Update birth expected event if breeding date changed
+    const oldLitter = litters.find(l => l.id === litter.id);
+    if (oldLitter && oldLitter.breedingDate.getTime() !== litter.breedingDate.getTime()) {
+      // Find the associated birthExpected event
+      const birthEvent = breedingEvents.find(e => 
+        e.type === 'birthExpected' && 
+        e.dogId === litter.dogId && 
+        // Find event that's approximately 60 days after the old breeding date
+        Math.abs(e.date.getTime() - (new Date(oldLitter.breedingDate).getTime() + 60 * 24 * 60 * 60 * 1000)) < 86400000
+      );
+      
+      if (birthEvent) {
+        // Calculate new expected birth date
+        const newBirthDate = new Date(litter.breedingDate);
+        newBirthDate.setDate(newBirthDate.getDate() + 60);
+        
+        // Update the event
+        updateBreedingEvent({
+          ...birthEvent,
+          date: newBirthDate
+        });
+      }
+    }
   };
 
   const removeLitter = (litterId: string) => {
@@ -415,7 +445,7 @@ export const DogProvider = ({ children }: { children: ReactNode }) => {
     if (litterToRemove) {
       // Remove associated birth expected event
       const birthDate = new Date(litterToRemove.breedingDate);
-      birthDate.setDate(birthDate.getDate() + 63);
+      birthDate.setDate(birthDate.getDate() + 60);
       
       setBreedingEvents(prev => 
         prev.filter(event => 
