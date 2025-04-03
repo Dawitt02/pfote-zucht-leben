@@ -13,9 +13,8 @@ interface DashboardProps {
 }
 
 export function Dashboard({ className }: DashboardProps) {
-  // Use context instead of mock data
   const { dogs } = useDogs();
-  const myDogs = dogs.slice(0, 3); // Show only first 3 dogs in dashboard
+  const myDogs = dogs.slice(0, 3);
 
   const upcomingEvents = [
     { id: '1', date: '15.04.2025', title: 'Tierarzttermin für Luna', type: 'health' },
@@ -25,7 +24,6 @@ export function Dashboard({ className }: DashboardProps) {
 
   return (
     <div className={cn("space-y-6 pb-16", className)}>
-      {/* Header with welcome message */}
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-2xl font-bold">Willkommen zurück!</h1>
@@ -36,14 +34,12 @@ export function Dashboard({ className }: DashboardProps) {
         </Button>
       </div>
 
-      {/* Quick actions */}
       <div className="grid grid-cols-3 gap-3">
         <QuickAction to="/dogs/add" icon={<Plus className="h-5 w-5" />} label="Hund hinzufügen" color="amber" />
         <QuickAction to="/breeding/plan" icon={<Calendar className="h-5 w-5" />} label="Zuchtplanung" color="blue" />
         <QuickAction to="/health/record" icon={<Activity className="h-5 w-5" />} label="Gesundheitscheck" color="green" />
       </div>
 
-      {/* My dogs section */}
       <section>
         <div className="flex justify-between items-center mb-3">
           <h2 className="text-xl font-semibold">Meine Hunde</h2>
@@ -61,7 +57,6 @@ export function Dashboard({ className }: DashboardProps) {
         </div>
       </section>
 
-      {/* Upcoming events section */}
       <section>
         <div className="flex justify-between items-center mb-3">
           <h2 className="text-xl font-semibold">Anstehende Termine</h2>
@@ -96,7 +91,6 @@ export function Dashboard({ className }: DashboardProps) {
         </Card>
       </section>
 
-      {/* Statistics summary */}
       <section>
         <h2 className="text-xl font-semibold mb-3">Zuchtstatistik</h2>
         <div className="grid grid-cols-2 gap-3">
