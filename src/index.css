@@ -68,11 +68,20 @@
   }
 
   .nav-icon {
-    @apply mb-1 h-6 w-6;
+    @apply h-6 w-6;
   }
 
   .touch-target {
     @apply min-h-11 min-w-11;
+  }
+  
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
   }
 }
 
