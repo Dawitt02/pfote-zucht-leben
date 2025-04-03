@@ -1,51 +1,50 @@
 
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { DogProvider } from "./context/DogContext";
-import Index from "./pages/Index";
-import DogProfiles from "./pages/DogProfiles";
-import DogDetail from "./pages/DogDetail";
-import AddDog from "./pages/AddDog";
-import EditDog from "./pages/EditDog";
-import Breeding from "./pages/Breeding";
-import Health from "./pages/Health";
-import Community from "./pages/Community";
-import NotFound from "./pages/NotFound";
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+
+import { DogProvider } from './context/DogContext';
+import AppWrapper from './components/AppWrapper';
+import Dashboard from './components/Dashboard';
+import DogProfiles from './pages/DogProfiles';
+import DogDetail from './pages/DogDetail';
+import AddDog from './pages/AddDog';
+import EditDog from './pages/EditDog';
+import Health from './pages/Health';
+import Breeding from './pages/Breeding';
+import LitterDetail from './pages/LitterDetail';
+import Community from './pages/Community';
+import NotFound from './pages/NotFound';
+import Index from './pages/Index';
+
+import './App.css';
 
 const queryClient = new QueryClient();
 
-const App = () => {
+function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <DogProvider>
-          <Toaster />
-          <Sonner />
-          <BrowserRouter>
-            <Routes>
-              <Route path="/" element={<Index />} />
-              <Route path="/dogs" element={<DogProfiles />} />
-              <Route path="/dogs/add" element={<AddDog />} />
-              <Route path="/dogs/:id" element={<DogDetail />} />
-              <Route path="/dogs/:id/edit" element={<EditDog />} />
-              <Route path="/dogs/:id/documents" element={<DogProfiles />} />
-              <Route path="/breeding" element={<Breeding />} />
-              <Route path="/breeding/plan" element={<Breeding />} />
-              <Route path="/breeding/cycles" element={<Breeding />} />
-              <Route path="/breeding/litters" element={<Breeding />} />
-              <Route path="/health" element={<Health />} />
-              <Route path="/community" element={<Community />} />
-              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+      <DogProvider>
+        <Router>
+          <Routes>
+            <Route path="/" element={<AppWrapper />}>
+              <Route index element={<Index />} />
+              <Route path="dashboard" element={<Dashboard />} />
+              <Route path="dogs" element={<DogProfiles />} />
+              <Route path="dogs/:dogId" element={<DogDetail />} />
+              <Route path="dogs/add" element={<AddDog />} />
+              <Route path="dogs/edit/:dogId" element={<EditDog />} />
+              <Route path="health" element={<Health />} />
+              <Route path="breeding" element={<Breeding />} />
+              <Route path="breeding/litter/:litterId" element={<LitterDetail />} />
+              <Route path="community" element={<Community />} />
               <Route path="*" element={<NotFound />} />
-            </Routes>
-          </BrowserRouter>
-        </DogProvider>
-      </TooltipProvider>
+            </Route>
+          </Routes>
+        </Router>
+      </DogProvider>
     </QueryClientProvider>
   );
-};
+}
 
 export default App;

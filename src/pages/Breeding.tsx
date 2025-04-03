@@ -1,5 +1,5 @@
-
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import {
   PlusCircle,
   CalendarDays,
@@ -446,9 +446,11 @@ const Breeding = () => {
                                         Geboren am: {format(new Date(litter.birthDate!), 'dd.MM.yyyy', { locale: de })}
                                       </p>
                                     </div>
-                                    <Button variant="ghost" size="icon">
-                                      <ChevronRight className="h-4 w-4" />
-                                    </Button>
+                                    <Link to={`/breeding/litter/${litter.id}`}>
+                                      <Button variant="ghost" size="icon">
+                                        <ChevronRight className="h-4 w-4" />
+                                      </Button>
+                                    </Link>
                                   </div>
                                   {litter.notes && (
                                     <p className="text-sm mt-2 text-muted-foreground">{litter.notes}</p>

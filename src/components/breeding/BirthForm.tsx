@@ -6,6 +6,7 @@ import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useNavigate } from 'react-router-dom';
 
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -49,10 +50,16 @@ type BirthFormValues = z.infer<typeof birthFormSchema>;
 interface BirthFormProps {
   onSubmit?: () => void;
   preselectedLitterId?: string;
+  navigateToDetail?: boolean;
 }
 
-const BirthForm = ({ onSubmit: onSubmitProp, preselectedLitterId }: BirthFormProps) => {
+const BirthForm = ({ 
+  onSubmit: onSubmitProp, 
+  preselectedLitterId,
+  navigateToDetail = false 
+}: BirthFormProps) => {
   const { dogs, litters, recordBirth } = useDogs();
+  const navigate = useNavigate();
   const pendingLitters = litters.filter(litter => !litter.birthDate);
   
   const form = useForm<BirthFormValues>({
@@ -92,6 +99,11 @@ const BirthForm = ({ onSubmit: onSubmitProp, preselectedLitterId }: BirthFormPro
       
       if (onSubmitProp) {
         onSubmitProp();
+      }
+      
+      if (navigateToDetail) {
+        navigate(`/breeding/litter/${litterId}`);
+        return;
       }
       
       form.reset({
