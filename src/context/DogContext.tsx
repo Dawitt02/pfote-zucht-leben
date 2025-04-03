@@ -1,6 +1,16 @@
 
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 
+// Document type definition
+export interface DogDocument {
+  id: string;
+  name: string;
+  category: string;
+  fileUrl: string;
+  date: string;
+  fileType: string;
+}
+
 // Dog type definition
 export interface Dog {
   id: string;
@@ -16,6 +26,7 @@ export interface Dog {
   chipNumber?: string;
   notes?: string;
   hasStandardPhotos?: boolean;
+  documents?: DogDocument[];
   
   // Additional properties needed for EditDog
   pedigree?: string;
@@ -36,7 +47,9 @@ export interface Dog {
 interface DogContextType {
   dogs: Dog[];
   addDog: (dog: Omit<Dog, 'id'>) => void;
-  updateDog: (dog: Dog) => void; // Add the updateDog function
+  updateDog: (dog: Dog) => void;
+  addDocumentToDog: (dogId: string, document: Omit<DogDocument, 'id'>) => void;
+  removeDocumentFromDog: (dogId: string, documentId: string) => void;
 }
 
 const DogContext = createContext<DogContextType | undefined>(undefined);
@@ -89,10 +102,9 @@ export const DogProvider = ({ children }: { children: ReactNode }) => {
 
   const addDog = (newDog: Omit<Dog, 'id'>) => {
     const id = (dogs.length + 1).toString();
-    setDogs(prevDogs => [...prevDogs, { id, ...newDog }]);
+    setDogs(prevDogs => [...prevDogs, { id, ...newDog, documents: [] }]);
   };
 
-  // Add the updateDog function implementation
   const updateDog = (updatedDog: Dog) => {
     setDogs(prevDogs => 
       prevDogs.map(dog => 
@@ -101,8 +113,47 @@ export const DogProvider = ({ children }: { children: ReactNode }) => {
     );
   };
 
+  const addDocumentToDog = (dogId: string, document: Omit<DogDocument, 'id'>) => {
+    setDogs(prevDogs => 
+      prevDogs.map(dog => {
+        if (dog.id === dogId) {
+          const documents = dog.documents || [];
+          const newDocument = {
+            id: `${dogId}-doc-${documents.length + 1}`,
+            ...document
+          };
+          return {
+            ...dog,
+            documents: [...documents, newDocument]
+          };
+        }
+        return dog;
+      })
+    );
+  };
+
+  const removeDocumentFromDog = (dogId: string, documentId: string) => {
+    setDogs(prevDogs => 
+      prevDogs.map(dog => {
+        if (dog.id === dogId && dog.documents) {
+          return {
+            ...dog,
+            documents: dog.documents.filter(doc => doc.id !== documentId)
+          };
+        }
+        return dog;
+      })
+    );
+  };
+
   return (
-    <DogContext.Provider value={{ dogs, addDog, updateDog }}>
+    <DogContext.Provider value={{ 
+      dogs, 
+      addDog, 
+      updateDog, 
+      addDocumentToDog, 
+      removeDocumentFromDog 
+    }}>
       {children}
     </DogContext.Provider>
   );
