@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import DogCard from './DogCard';
 import { useDogs } from '@/context/DogContext';
+import AppWrapper from '@/components/AppWrapper';
 
 interface DashboardProps {
   className?: string;
