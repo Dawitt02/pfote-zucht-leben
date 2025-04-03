@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { 
   ArrowLeft, 
   Calendar, 
@@ -83,8 +83,8 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 
 const DogDetail = () => {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('info');
-  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isUploadDialogOpen, setIsUploadDialogOpen] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [uploadCategory, setUploadCategory] = useState('documents');
@@ -92,7 +92,6 @@ const DogDetail = () => {
   const [documentName, setDocumentName] = useState('');
   const { toast } = useToast();
 
-  // Mock data - in a real app this would come from your state management or API
   const dogs = [
     {
       id: '1',
@@ -227,7 +226,6 @@ const DogDetail = () => {
   ];
 
   const dog = dogs.find(dog => dog.id === id);
-  const [editedDog, setEditedDog] = useState(dog);
 
   if (!dog) {
     return (
@@ -278,46 +276,12 @@ const DogDetail = () => {
     }
   };
 
-  const handleEditSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    toast({
-      title: "Änderungen gespeichert",
-      description: `Die Daten für ${editedDog?.name} wurden aktualisiert.`,
-    });
-    setIsEditDialogOpen(false);
-  };
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    if (editedDog) {
-      setEditedDog({
-        ...editedDog,
-        [name]: value,
-      });
-    }
-  };
-
-  const handleParentChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    if (editedDog && editedDog.parents) {
-      setEditedDog({
-        ...editedDog,
-        parents: {
-          ...editedDog.parents,
-          [name]: value,
-        },
-      });
-    }
-  };
-
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       setSelectedFile(e.target.files[0]);
       
-      // Auto-generate document name from file name if not provided
       if (!documentName) {
         const fileName = e.target.files[0].name;
-        // Remove file extension
         const nameWithoutExtension = fileName.split('.').slice(0, -1).join('.');
         setDocumentName(nameWithoutExtension);
       }
@@ -336,9 +300,6 @@ const DogDetail = () => {
       return;
     }
 
-    // In a real app, you would upload the file to your backend/storage here
-    // For now, we'll just simulate a successful upload
-    
     const fileType = selectedFile.name.split('.').pop()?.toLowerCase() || '';
     const currentDate = new Date().toLocaleDateString('de-DE');
     
@@ -354,7 +315,6 @@ const DogDetail = () => {
       description: `${newDocument.name} wurde erfolgreich hochgeladen.`,
     });
     
-    // Reset form
     setSelectedFile(null);
     setDocumentName('');
     setIsUploadDialogOpen(false);
@@ -365,7 +325,6 @@ const DogDetail = () => {
       <main className="flex-1 overflow-auto pb-16">
         <ScrollArea className="h-[calc(100vh-64px)]">
           <div className="app-container py-4">
-            {/* Back button */}
             <div className="mb-4">
               <Button variant="outline" size="sm" asChild>
                 <Link to="/dogs">
@@ -374,7 +333,6 @@ const DogDetail = () => {
               </Button>
             </div>
             
-            {/* Dog header */}
             <div className="flex flex-col md:flex-row gap-6 mb-6">
               <div className="w-full md:w-1/3">
                 <div className="relative rounded-lg overflow-hidden h-64">
@@ -392,184 +350,14 @@ const DogDetail = () => {
               <div className="w-full md:w-2/3">
                 <div className="flex justify-between items-start">
                   <h1 className="text-2xl md:text-3xl font-bold">{dog?.name}</h1>
-                  <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-                    <DialogTrigger asChild>
-                      <Button size="sm" variant="outline" className="bg-zucht-blue text-white hover:bg-zucht-blue/90">
-                        <Edit className="h-4 w-4 mr-2" /> Bearbeiten
-                      </Button>
-                    </DialogTrigger>
-                    <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
-                      <DialogHeader>
-                        <DialogTitle>Hundeprofil bearbeiten</DialogTitle>
-                        <DialogDescription>
-                          Ändern Sie die Informationen für {dog?.name}. Klicken Sie auf Speichern, wenn Sie fertig sind.
-                        </DialogDescription>
-                      </DialogHeader>
-                      <form onSubmit={handleEditSubmit}>
-                        <div className="grid gap-4 py-4">
-                          <div className="grid grid-cols-2 gap-4">
-                            {/* Grunddaten */}
-                            <div className="col-span-2">
-                              <h3 className="text-lg font-medium mb-2">Grunddaten</h3>
-                            </div>
-                            
-                            <div className="grid grid-cols-4 items-center gap-4">
-                              <Label htmlFor="name" className="text-right">
-                                Name
-                              </Label>
-                              <Input
-                                id="name"
-                                name="name"
-                                value={editedDog?.name}
-                                onChange={handleInputChange}
-                                className="col-span-3"
-                              />
-                            </div>
-                            
-                            <div className="grid grid-cols-4 items-center gap-4">
-                              <Label htmlFor="breed" className="text-right">
-                                Rasse
-                              </Label>
-                              <Input
-                                id="breed"
-                                name="breed"
-                                value={editedDog?.breed}
-                                onChange={handleInputChange}
-                                className="col-span-3"
-                              />
-                            </div>
-                            
-                            <div className="grid grid-cols-4 items-center gap-4">
-                              <Label htmlFor="age" className="text-right">
-                                Alter
-                              </Label>
-                              <Input
-                                id="age"
-                                name="age"
-                                value={editedDog?.age}
-                                onChange={handleInputChange}
-                                className="col-span-3"
-                              />
-                            </div>
-                            
-                            <div className="grid grid-cols-4 items-center gap-4">
-                              <Label htmlFor="birthDate" className="text-right">
-                                Geburtsdatum
-                              </Label>
-                              <Input
-                                id="birthDate"
-                                name="birthDate"
-                                value={editedDog?.birthDate}
-                                onChange={handleInputChange}
-                                className="col-span-3"
-                              />
-                            </div>
-                            
-                            <div className="grid grid-cols-4 items-center gap-4">
-                              <Label htmlFor="chip" className="text-right">
-                                Chip-Nr.
-                              </Label>
-                              <Input
-                                id="chip"
-                                name="chip"
-                                value={editedDog?.chip}
-                                onChange={handleInputChange}
-                                className="col-span-3"
-                              />
-                            </div>
-                            
-                            <div className="grid grid-cols-4 items-center gap-4">
-                              <Label htmlFor="breedingStatus" className="text-right">
-                                Zuchtstatus
-                              </Label>
-                              <Input
-                                id="breedingStatus"
-                                name="breedingStatus"
-                                value={editedDog?.breedingStatus}
-                                onChange={handleInputChange}
-                                className="col-span-3"
-                              />
-                            </div>
-                            
-                            <div className="grid grid-cols-4 items-center gap-4">
-                              <Label htmlFor="weight" className="text-right">
-                                Gewicht
-                              </Label>
-                              <Input
-                                id="weight"
-                                name="weight"
-                                value={editedDog?.weight}
-                                onChange={handleInputChange}
-                                className="col-span-3"
-                              />
-                            </div>
-                            
-                            <div className="grid grid-cols-4 items-center gap-4">
-                              <Label htmlFor="height" className="text-right">
-                                Widerristhöhe
-                              </Label>
-                              <Input
-                                id="height"
-                                name="height"
-                                value={editedDog?.height}
-                                onChange={handleInputChange}
-                                className="col-span-3"
-                              />
-                            </div>
-
-                            <div className="grid grid-cols-4 items-center gap-4">
-                              <Label htmlFor="color" className="text-right">
-                                Farbe
-                              </Label>
-                              <Input
-                                id="color"
-                                name="color"
-                                value={editedDog?.color}
-                                onChange={handleInputChange}
-                                className="col-span-3"
-                              />
-                            </div>
-                            
-                            {/* Abstammung */}
-                            <div className="col-span-2 mt-4">
-                              <h3 className="text-lg font-medium mb-2">Abstammung</h3>
-                            </div>
-                            
-                            <div className="grid grid-cols-4 items-center gap-4">
-                              <Label htmlFor="father" className="text-right">
-                                Vater
-                              </Label>
-                              <Input
-                                id="father"
-                                name="father"
-                                value={editedDog?.parents?.father}
-                                onChange={handleParentChange}
-                                className="col-span-3"
-                              />
-                            </div>
-                            
-                            <div className="grid grid-cols-4 items-center gap-4">
-                              <Label htmlFor="mother" className="text-right">
-                                Mutter
-                              </Label>
-                              <Input
-                                id="mother"
-                                name="mother"
-                                value={editedDog?.parents?.mother}
-                                onChange={handleParentChange}
-                                className="col-span-3"
-                              />
-                            </div>
-                          </div>
-                        </div>
-                        <DialogFooter>
-                          <Button type="submit" className="bg-zucht-blue hover:bg-zucht-blue/90">
-                            <Save className="h-4 w-4 mr-2" /> Speichern
-                          </Button>
-                        </DialogFooter>
-                      </form>
-                    </DialogContent>
-                  </Dialog>
+                  <Button 
+                    size="sm" 
+                    variant="outline" 
+                    className="bg-zucht-blue text-white hover:bg-zucht-blue/90"
+                    onClick={() => navigate(`/dogs/${id}/edit`)}
+                  >
+                    <Edit className="h-4 w-4 mr-2" /> Bearbeiten
+                  </Button>
                 </div>
                 
                 <p className="text-lg text-zucht-brown/80 mb-3">{dog?.breed}</p>
@@ -617,7 +405,6 @@ const DogDetail = () => {
               </div>
             </div>
             
-            {/* Tabs */}
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
               <TabsList className="grid grid-cols-5 w-full">
                 <TabsTrigger value="info">Grunddaten</TabsTrigger>
@@ -627,7 +414,6 @@ const DogDetail = () => {
                 <TabsTrigger value="media">Medien</TabsTrigger>
               </TabsList>
               
-              {/* Grunddaten Tab */}
               <TabsContent value="info" className="space-y-4 py-4">
                 <Card>
                   <CardHeader>
@@ -720,7 +506,6 @@ const DogDetail = () => {
                 )}
               </TabsContent>
               
-              {/* Gesundheit Tab */}
               <TabsContent value="health" className="space-y-4 py-4">
                 {dog?.healthTests && dog?.healthTests.length > 0 && (
                   <Card>
@@ -825,7 +610,6 @@ const DogDetail = () => {
                 )}
               </TabsContent>
               
-              {/* Zucht Tab */}
               <TabsContent value="breeding" className="space-y-4 py-4">
                 <Card>
                   <CardHeader>
@@ -839,7 +623,6 @@ const DogDetail = () => {
                       </span>
                     </div>
                     
-                    {/* Placeholder content for breeding tab */}
                     <div className="space-y-4">
                       <p className="text-sm text-gray-500">
                         Hier werden zukünftig Informationen zu Würfen, Zuchtplanungen und Zuchtwerten angezeigt.
@@ -861,7 +644,6 @@ const DogDetail = () => {
                 </Card>
               </TabsContent>
               
-              {/* Dokumente Tab */}
               <TabsContent value="documents" className="space-y-4 py-4">
                 {dog?.documents && dog?.documents.length > 0 && (
                   <Card>
@@ -1019,7 +801,6 @@ const DogDetail = () => {
                 </div>
               </TabsContent>
               
-              {/* Medien Tab */}
               <TabsContent value="media" className="space-y-4 py-4">
                 {dog?.media && dog?.media.length > 0 && (
                   <>
