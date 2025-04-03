@@ -80,9 +80,10 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { useDogs } from '@/context/DogContext';
 
 const DogDetail = () => {
-  const { id } = useParams<{ id: string }>();
+  const { dogId } = useParams<{ dogId: string }>();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('info');
   const [isUploadDialogOpen, setIsUploadDialogOpen] = useState(false);
@@ -91,141 +92,9 @@ const DogDetail = () => {
   const [uploadSubCategory, setUploadSubCategory] = useState('pedigree');
   const [documentName, setDocumentName] = useState('');
   const { toast } = useToast();
+  const { dogs } = useDogs();
 
-  const dogs = [
-    {
-      id: '1',
-      name: 'Luna',
-      breed: 'Golden Retriever',
-      age: '3 Jahre',
-      birthDate: '15.03.2022',
-      gender: 'female' as const,
-      imageUrl: 'https://images.unsplash.com/photo-1552053831-71594a27632d?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80',
-      breedingStatus: 'Zuchttauglich',
-      achievements: ['Ausstellung A'],
-      chip: '276098100123456',
-      color: 'Golden',
-      weight: '28 kg',
-      height: '56 cm',
-      parents: {
-        father: 'Rex vom Goldenen Tal',
-        mother: 'Bella von der Sonnenseite'
-      },
-      healthTests: [
-        { name: 'HD/ED Röntgen', date: '10.05.2024', result: 'HD-A / ED-0', document: 'hd_ed_luna.pdf' },
-        { name: 'Augenuntersuchung', date: '21.01.2024', result: 'Ohne Befund', document: 'augen_luna.pdf' }
-      ],
-      geneticTests: [
-        { name: 'PRA', result: 'Clear', date: '15.12.2023', document: 'pra_luna.pdf' },
-        { name: 'DM', result: 'Carrier', date: '15.12.2023', document: 'dm_luna.pdf' }
-      ],
-      vaccinations: [
-        { name: 'Tollwut', date: '10.02.2024', nextDue: '10.02.2025', document: 'tollwut_luna.pdf' },
-        { name: 'Kombiimpfung', date: '10.02.2024', nextDue: '10.02.2025', document: 'kombi_luna.pdf' }
-      ],
-      documents: [
-        { type: 'pedigree', name: 'Ahnentafel', date: '20.03.2022', fileType: 'pdf' },
-        { type: 'breeding', name: 'Zuchtzulassung', date: '15.06.2023', fileType: 'pdf' },
-        { type: 'exhibition', name: 'Ausstellungsbewertung München', date: '22.09.2023', fileType: 'pdf' }
-      ],
-      media: [
-        { type: 'photos', name: 'Standposition Seite', date: '01.04.2024', fileType: 'jpg' },
-        { type: 'photos', name: 'Standposition Front', date: '01.04.2024', fileType: 'jpg' },
-        { type: 'videos', name: 'Gangwerk', date: '01.04.2024', fileType: 'mp4' }
-      ]
-    },
-    {
-      id: '2',
-      name: 'Max',
-      breed: 'Deutscher Schäferhund',
-      age: '4 Jahre',
-      birthDate: '22.06.2021',
-      gender: 'male' as const,
-      imageUrl: 'https://images.unsplash.com/photo-1589941013453-ec89f33b5e95?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80',
-      breedingStatus: 'Aktiv',
-      achievements: ['Schutzhund IPO1', 'Ausstellung B'],
-      chip: '276098100678910',
-      color: 'Schwarz-Braun',
-      weight: '35 kg',
-      height: '65 cm',
-      parents: {
-        father: 'Tyson vom Schwarzwald',
-        mother: 'Heidi von der Bergstraße'
-      },
-      healthTests: [
-        { name: 'HD/ED Röntgen', date: '05.08.2023', result: 'HD-B / ED-1', document: 'hd_ed_max.pdf' }
-      ],
-      geneticTests: [
-        { name: 'DM', result: 'Clear', date: '12.09.2022', document: 'dm_max.pdf' }
-      ],
-      vaccinations: [
-        { name: 'Tollwut', date: '15.01.2024', nextDue: '15.01.2025', document: 'tollwut_max.pdf' }
-      ],
-      documents: [
-        { type: 'pedigree', name: 'Ahnentafel', date: '30.06.2021', fileType: 'pdf' },
-        { type: 'breeding', name: 'Zuchtzulassung', date: '05.10.2022', fileType: 'pdf' }
-      ],
-      media: [
-        { type: 'photos', name: 'Standposition Seite', date: '10.02.2024', fileType: 'jpg' },
-        { type: 'videos', name: 'Schutzdienst-Übung', date: '10.02.2024', fileType: 'mp4' }
-      ]
-    },
-    {
-      id: '3',
-      name: 'Bella',
-      breed: 'Labrador Retriever',
-      age: '2 Jahre',
-      birthDate: '08.11.2022',
-      gender: 'female' as const,
-      imageUrl: 'https://images.unsplash.com/photo-1591769225440-811ad7d6eab2?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80',
-      breedingStatus: 'In Vorbereitung',
-      chip: '276098100345678',
-      color: 'Schwarz',
-      weight: '26 kg',
-      height: '54 cm',
-      parents: {
-        father: 'Bruno vom Seeblick',
-        mother: 'Nora vom Wiesengrund'
-      },
-      healthTests: [
-        { name: 'HD/ED Röntgen', date: '10.01.2024', result: 'HD-A / ED-0', document: 'hd_ed_bella.pdf' }
-      ],
-      documents: [
-        { type: 'pedigree', name: 'Ahnentafel', date: '15.11.2022', fileType: 'pdf' }
-      ],
-      media: [
-        { type: 'photos', name: 'Standposition Seite', date: '20.03.2024', fileType: 'jpg' }
-      ]
-    },
-    {
-      id: '4',
-      name: 'Rocky',
-      breed: 'Boxer',
-      age: '5 Jahre',
-      birthDate: '03.05.2020',
-      gender: 'male' as const,
-      imageUrl: 'https://images.unsplash.com/photo-1535930891776-0c2dfb7fda1a?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80',
-      breedingStatus: 'Ruhend',
-      achievements: ['Ausstellung C'],
-      chip: '276098100987654',
-      color: 'Gestromt',
-      weight: '32 kg',
-      height: '60 cm',
-      parents: {
-        father: 'Champion vom Boxerparadies',
-        mother: 'Cindy von der Stadtmitte'
-      },
-      healthTests: [
-        { name: 'Herzuntersuchung', date: '15.06.2023', result: 'Ohne Befund', document: 'herz_rocky.pdf' }
-      ],
-      documents: [
-        { type: 'pedigree', name: 'Ahnentafel', date: '10.05.2020', fileType: 'pdf' },
-        { type: 'exhibition', name: 'Ausstellungsbewertung Hamburg', date: '18.08.2023', fileType: 'pdf' }
-      ]
-    }
-  ];
-
-  const dog = dogs.find(dog => dog.id === id);
+  const dog = dogs.find(dog => dog.id === dogId);
 
   if (!dog) {
     return (
@@ -354,7 +223,7 @@ const DogDetail = () => {
                     size="sm" 
                     variant="outline" 
                     className="bg-zucht-blue text-white hover:bg-zucht-blue/90"
-                    onClick={() => navigate(`/dogs/${id}/edit`)}
+                    onClick={() => navigate(`/dogs/${dogId}/edit`)}
                   >
                     <Edit className="h-4 w-4 mr-2" /> Bearbeiten
                   </Button>
