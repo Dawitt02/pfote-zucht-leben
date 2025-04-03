@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { 
@@ -15,7 +16,9 @@ import {
   Syringe,
   Medal,
   File,
-  X
+  X,
+  Upload,
+  Save
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Navbar from '@/components/Navbar';
@@ -52,15 +55,41 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
+  DialogClose,
 } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 
 const DogDetail = () => {
   const { id } = useParams<{ id: string }>();
   const [activeTab, setActiveTab] = useState('info');
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [isUploadDialogOpen, setIsUploadDialogOpen] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [uploadCategory, setUploadCategory] = useState('documents');
+  const [uploadSubCategory, setUploadSubCategory] = useState('pedigree');
+  const [documentName, setDocumentName] = useState('');
   const { toast } = useToast();
 
   // Mock data - in a real app this would come from your state management or API
@@ -268,6 +297,69 @@ const DogDetail = () => {
     }
   };
 
+  const handleParentChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    if (editedDog && editedDog.parents) {
+      setEditedDog({
+        ...editedDog,
+        parents: {
+          ...editedDog.parents,
+          [name]: value,
+        },
+      });
+    }
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setSelectedFile(e.target.files[0]);
+      
+      // Auto-generate document name from file name if not provided
+      if (!documentName) {
+        const fileName = e.target.files[0].name;
+        // Remove file extension
+        const nameWithoutExtension = fileName.split('.').slice(0, -1).join('.');
+        setDocumentName(nameWithoutExtension);
+      }
+    }
+  };
+
+  const handleUploadSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!selectedFile) {
+      toast({
+        title: "Fehler",
+        description: "Bitte wählen Sie eine Datei aus.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // In a real app, you would upload the file to your backend/storage here
+    // For now, we'll just simulate a successful upload
+    
+    const fileType = selectedFile.name.split('.').pop()?.toLowerCase() || '';
+    const currentDate = new Date().toLocaleDateString('de-DE');
+    
+    const newDocument = {
+      type: uploadSubCategory,
+      name: documentName || selectedFile.name,
+      date: currentDate,
+      fileType: fileType
+    };
+    
+    toast({
+      title: "Datei hochgeladen",
+      description: `${newDocument.name} wurde erfolgreich hochgeladen.`,
+    });
+    
+    // Reset form
+    setSelectedFile(null);
+    setDocumentName('');
+    setIsUploadDialogOpen(false);
+  };
+
   return (
     <div className="flex flex-col h-full bg-zucht-cream">
       <main className="flex-1 overflow-auto pb-16">
@@ -305,7 +397,7 @@ const DogDetail = () => {
                       <Edit className="h-4 w-4 mr-2" /> Bearbeiten
                     </Button>
                   </DialogTrigger>
-                  <DialogContent className="sm:max-w-[425px]">
+                  <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
                     <DialogHeader>
                       <DialogTitle>Hundeprofil bearbeiten</DialogTitle>
                       <DialogDescription>
@@ -314,69 +406,165 @@ const DogDetail = () => {
                     </DialogHeader>
                     <form onSubmit={handleEditSubmit}>
                       <div className="grid gap-4 py-4">
-                        <div className="grid grid-cols-4 items-center gap-4">
-                          <Label htmlFor="name" className="text-right">
-                            Name
-                          </Label>
-                          <Input
-                            id="name"
-                            name="name"
-                            value={editedDog?.name}
-                            onChange={handleInputChange}
-                            className="col-span-3"
-                          />
-                        </div>
-                        <div className="grid grid-cols-4 items-center gap-4">
-                          <Label htmlFor="breed" className="text-right">
-                            Rasse
-                          </Label>
-                          <Input
-                            id="breed"
-                            name="breed"
-                            value={editedDog?.breed}
-                            onChange={handleInputChange}
-                            className="col-span-3"
-                          />
-                        </div>
-                        <div className="grid grid-cols-4 items-center gap-4">
-                          <Label htmlFor="age" className="text-right">
-                            Alter
-                          </Label>
-                          <Input
-                            id="age"
-                            name="age"
-                            value={editedDog?.age}
-                            onChange={handleInputChange}
-                            className="col-span-3"
-                          />
-                        </div>
-                        <div className="grid grid-cols-4 items-center gap-4">
-                          <Label htmlFor="weight" className="text-right">
-                            Gewicht
-                          </Label>
-                          <Input
-                            id="weight"
-                            name="weight"
-                            value={editedDog?.weight}
-                            onChange={handleInputChange}
-                            className="col-span-3"
-                          />
-                        </div>
-                        <div className="grid grid-cols-4 items-center gap-4">
-                          <Label htmlFor="color" className="text-right">
-                            Farbe
-                          </Label>
-                          <Input
-                            id="color"
-                            name="color"
-                            value={editedDog?.color}
-                            onChange={handleInputChange}
-                            className="col-span-3"
-                          />
+                        <div className="grid grid-cols-2 gap-4">
+                          {/* Grunddaten */}
+                          <div className="col-span-2">
+                            <h3 className="text-lg font-medium mb-2">Grunddaten</h3>
+                          </div>
+                          
+                          <div className="grid grid-cols-4 items-center gap-4">
+                            <Label htmlFor="name" className="text-right">
+                              Name
+                            </Label>
+                            <Input
+                              id="name"
+                              name="name"
+                              value={editedDog?.name}
+                              onChange={handleInputChange}
+                              className="col-span-3"
+                            />
+                          </div>
+                          
+                          <div className="grid grid-cols-4 items-center gap-4">
+                            <Label htmlFor="breed" className="text-right">
+                              Rasse
+                            </Label>
+                            <Input
+                              id="breed"
+                              name="breed"
+                              value={editedDog?.breed}
+                              onChange={handleInputChange}
+                              className="col-span-3"
+                            />
+                          </div>
+                          
+                          <div className="grid grid-cols-4 items-center gap-4">
+                            <Label htmlFor="age" className="text-right">
+                              Alter
+                            </Label>
+                            <Input
+                              id="age"
+                              name="age"
+                              value={editedDog?.age}
+                              onChange={handleInputChange}
+                              className="col-span-3"
+                            />
+                          </div>
+                          
+                          <div className="grid grid-cols-4 items-center gap-4">
+                            <Label htmlFor="birthDate" className="text-right">
+                              Geburtsdatum
+                            </Label>
+                            <Input
+                              id="birthDate"
+                              name="birthDate"
+                              value={editedDog?.birthDate}
+                              onChange={handleInputChange}
+                              className="col-span-3"
+                            />
+                          </div>
+                          
+                          <div className="grid grid-cols-4 items-center gap-4">
+                            <Label htmlFor="chip" className="text-right">
+                              Chip-Nr.
+                            </Label>
+                            <Input
+                              id="chip"
+                              name="chip"
+                              value={editedDog?.chip}
+                              onChange={handleInputChange}
+                              className="col-span-3"
+                            />
+                          </div>
+                          
+                          <div className="grid grid-cols-4 items-center gap-4">
+                            <Label htmlFor="breedingStatus" className="text-right">
+                              Zuchtstatus
+                            </Label>
+                            <Input
+                              id="breedingStatus"
+                              name="breedingStatus"
+                              value={editedDog?.breedingStatus}
+                              onChange={handleInputChange}
+                              className="col-span-3"
+                            />
+                          </div>
+                          
+                          <div className="grid grid-cols-4 items-center gap-4">
+                            <Label htmlFor="weight" className="text-right">
+                              Gewicht
+                            </Label>
+                            <Input
+                              id="weight"
+                              name="weight"
+                              value={editedDog?.weight}
+                              onChange={handleInputChange}
+                              className="col-span-3"
+                            />
+                          </div>
+                          
+                          <div className="grid grid-cols-4 items-center gap-4">
+                            <Label htmlFor="height" className="text-right">
+                              Widerristhöhe
+                            </Label>
+                            <Input
+                              id="height"
+                              name="height"
+                              value={editedDog?.height}
+                              onChange={handleInputChange}
+                              className="col-span-3"
+                            />
+                          </div>
+
+                          <div className="grid grid-cols-4 items-center gap-4">
+                            <Label htmlFor="color" className="text-right">
+                              Farbe
+                            </Label>
+                            <Input
+                              id="color"
+                              name="color"
+                              value={editedDog?.color}
+                              onChange={handleInputChange}
+                              className="col-span-3"
+                            />
+                          </div>
+                          
+                          {/* Abstammung */}
+                          <div className="col-span-2 mt-4">
+                            <h3 className="text-lg font-medium mb-2">Abstammung</h3>
+                          </div>
+                          
+                          <div className="grid grid-cols-4 items-center gap-4">
+                            <Label htmlFor="father" className="text-right">
+                              Vater
+                            </Label>
+                            <Input
+                              id="father"
+                              name="father"
+                              value={editedDog?.parents?.father}
+                              onChange={handleParentChange}
+                              className="col-span-3"
+                            />
+                          </div>
+                          
+                          <div className="grid grid-cols-4 items-center gap-4">
+                            <Label htmlFor="mother" className="text-right">
+                              Mutter
+                            </Label>
+                            <Input
+                              id="mother"
+                              name="mother"
+                              value={editedDog?.parents?.mother}
+                              onChange={handleParentChange}
+                              className="col-span-3"
+                            />
+                          </div>
                         </div>
                       </div>
                       <DialogFooter>
-                        <Button type="submit">Speichern</Button>
+                        <Button type="submit" className="bg-zucht-blue hover:bg-zucht-blue/90">
+                          <Save className="h-4 w-4 mr-2" /> Speichern
+                        </Button>
                       </DialogFooter>
                     </form>
                   </DialogContent>
@@ -709,9 +897,40 @@ const DogDetail = () => {
                             </TableCell>
                             <TableCell>{doc.date}</TableCell>
                             <TableCell>
-                              <Button variant="ghost" size="sm" className="text-zucht-blue">
-                                <FileText className="h-4 w-4 mr-2" /> Anzeigen
-                              </Button>
+                              <div className="flex space-x-2">
+                                <Button variant="ghost" size="sm" className="text-zucht-blue">
+                                  <FileText className="h-4 w-4 mr-2" /> Anzeigen
+                                </Button>
+                                <AlertDialog>
+                                  <AlertDialogTrigger asChild>
+                                    <Button variant="ghost" size="sm" className="text-red-500">
+                                      <X className="h-4 w-4 mr-2" /> Löschen
+                                    </Button>
+                                  </AlertDialogTrigger>
+                                  <AlertDialogContent>
+                                    <AlertDialogHeader>
+                                      <AlertDialogTitle>Dokument löschen</AlertDialogTitle>
+                                      <AlertDialogDescription>
+                                        Möchten Sie wirklich das Dokument "{doc.name}" löschen? Diese Aktion kann nicht rückgängig gemacht werden.
+                                      </AlertDialogDescription>
+                                    </AlertDialogHeader>
+                                    <AlertDialogFooter>
+                                      <AlertDialogCancel>Abbrechen</AlertDialogCancel>
+                                      <AlertDialogAction 
+                                        className="bg-red-500 hover:bg-red-600"
+                                        onClick={() => {
+                                          toast({
+                                            title: "Dokument gelöscht",
+                                            description: `${doc.name} wurde erfolgreich gelöscht.`,
+                                          });
+                                        }}
+                                      >
+                                        Löschen
+                                      </AlertDialogAction>
+                                    </AlertDialogFooter>
+                                  </AlertDialogContent>
+                                </AlertDialog>
+                              </div>
                             </TableCell>
                           </TableRow>
                         ))}
@@ -722,9 +941,80 @@ const DogDetail = () => {
               )}
               
               <div className="flex justify-end">
-                <Button className="bg-zucht-blue hover:bg-zucht-blue/90">
-                  <FileText className="h-4 w-4 mr-2" /> Dokument hochladen
-                </Button>
+                <Dialog open={isUploadDialogOpen} onOpenChange={setIsUploadDialogOpen}>
+                  <DialogTrigger asChild>
+                    <Button className="bg-zucht-blue hover:bg-zucht-blue/90">
+                      <Upload className="h-4 w-4 mr-2" /> Dokument hochladen
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="sm:max-w-[425px]">
+                    <DialogHeader>
+                      <DialogTitle>Dokument hochladen</DialogTitle>
+                      <DialogDescription>
+                        Laden Sie ein neues Dokument für {dog?.name} hoch. Wählen Sie die Kategorie und die Datei aus.
+                      </DialogDescription>
+                    </DialogHeader>
+                    <form onSubmit={handleUploadSubmit}>
+                      <div className="grid gap-4 py-4">
+                        <div className="grid grid-cols-4 items-center gap-4">
+                          <Label htmlFor="documentName" className="text-right">
+                            Dokumentname
+                          </Label>
+                          <Input
+                            id="documentName"
+                            value={documentName}
+                            onChange={(e) => setDocumentName(e.target.value)}
+                            placeholder="Name des Dokuments"
+                            className="col-span-3"
+                          />
+                        </div>
+                        
+                        <div className="grid grid-cols-4 items-center gap-4">
+                          <Label htmlFor="category" className="text-right">
+                            Kategorie
+                          </Label>
+                          <select 
+                            id="category"
+                            value={uploadSubCategory}
+                            onChange={(e) => setUploadSubCategory(e.target.value)}
+                            className="col-span-3 flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
+                          >
+                            <option value="pedigree">Stammbaum</option>
+                            <option value="breeding">Zuchtverband</option>
+                            <option value="exhibition">Ausstellung</option>
+                            <option value="health">Gesundheit</option>
+                            <option value="genetic">Genetik</option>
+                            <option value="vaccination">Impfung</option>
+                            <option value="litter">Wurfabnahme</option>
+                          </select>
+                        </div>
+                        
+                        <div className="grid grid-cols-4 items-center gap-4">
+                          <Label htmlFor="file" className="text-right">
+                            Datei
+                          </Label>
+                          <div className="col-span-3">
+                            <Input
+                              id="file"
+                              type="file"
+                              onChange={handleFileChange}
+                              className="col-span-3"
+                              accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
+                            />
+                            <p className="text-xs text-gray-500 mt-1">
+                              Unterstützte Formate: PDF, JPG, PNG, DOCX
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                      <DialogFooter>
+                        <Button type="submit" className="bg-zucht-blue hover:bg-zucht-blue/90">
+                          <Upload className="h-4 w-4 mr-2" /> Hochladen
+                        </Button>
+                      </DialogFooter>
+                    </form>
+                  </DialogContent>
+                </Dialog>
               </div>
             </TabsContent>
             
@@ -749,6 +1039,37 @@ const DogDetail = () => {
                             <span>{item.date}</span>
                             <span className="capitalize">{item.type === 'photos' ? 'Foto' : 'Video'}</span>
                           </div>
+                          <div className="flex justify-end mt-2">
+                            <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                <Button variant="ghost" size="sm" className="text-red-500 h-8 px-2 py-1">
+                                  <X className="h-4 w-4 mr-1" /> Löschen
+                                </Button>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent>
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle>Medium löschen</AlertDialogTitle>
+                                  <AlertDialogDescription>
+                                    Möchten Sie wirklich "{item.name}" löschen? Diese Aktion kann nicht rückgängig gemacht werden.
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel>Abbrechen</AlertDialogCancel>
+                                  <AlertDialogAction 
+                                    className="bg-red-500 hover:bg-red-600"
+                                    onClick={() => {
+                                      toast({
+                                        title: "Medium gelöscht",
+                                        description: `${item.name} wurde erfolgreich gelöscht.`,
+                                      });
+                                    }}
+                                  >
+                                    Löschen
+                                  </AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
+                          </div>
                         </div>
                       </div>
                     ))}
@@ -757,9 +1078,77 @@ const DogDetail = () => {
               )}
               
               <div className="flex justify-end mt-4">
-                <Button className="bg-zucht-blue hover:bg-zucht-blue/90">
-                  <Image className="h-4 w-4 mr-2" /> Medien hochladen
-                </Button>
+                <Dialog open={isUploadDialogOpen} onOpenChange={setIsUploadDialogOpen}>
+                  <DialogTrigger asChild>
+                    <Button className="bg-zucht-blue hover:bg-zucht-blue/90">
+                      <Upload className="h-4 w-4 mr-2" /> Medien hochladen
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="sm:max-w-[425px]">
+                    <DialogHeader>
+                      <DialogTitle>Medium hochladen</DialogTitle>
+                      <DialogDescription>
+                        Laden Sie ein neues Foto oder Video für {dog?.name} hoch.
+                      </DialogDescription>
+                    </DialogHeader>
+                    <form onSubmit={handleUploadSubmit}>
+                      <div className="grid gap-4 py-4">
+                        <div className="grid grid-cols-4 items-center gap-4">
+                          <Label htmlFor="mediaName" className="text-right">
+                            Bezeichnung
+                          </Label>
+                          <Input
+                            id="mediaName"
+                            value={documentName}
+                            onChange={(e) => setDocumentName(e.target.value)}
+                            placeholder="Beschreibung des Mediums"
+                            className="col-span-3"
+                          />
+                        </div>
+                        
+                        <div className="grid grid-cols-4 items-center gap-4">
+                          <Label htmlFor="mediaCategory" className="text-right">
+                            Kategorie
+                          </Label>
+                          <select 
+                            id="mediaCategory"
+                            value={uploadCategory}
+                            onChange={(e) => setUploadCategory(e.target.value)}
+                            className="col-span-3 flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
+                          >
+                            <option value="photos">Foto</option>
+                            <option value="videos">Video</option>
+                          </select>
+                        </div>
+                        
+                        <div className="grid grid-cols-4 items-center gap-4">
+                          <Label htmlFor="mediaFile" className="text-right">
+                            Datei
+                          </Label>
+                          <div className="col-span-3">
+                            <Input
+                              id="mediaFile"
+                              type="file"
+                              onChange={handleFileChange}
+                              className="col-span-3"
+                              accept={uploadCategory === 'photos' ? '.jpg,.jpeg,.png' : '.mp4,.mov'}
+                            />
+                            <p className="text-xs text-gray-500 mt-1">
+                              {uploadCategory === 'photos' 
+                                ? 'Unterstützte Formate: JPG, PNG' 
+                                : 'Unterstützte Formate: MP4, MOV'}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                      <DialogFooter>
+                        <Button type="submit" className="bg-zucht-blue hover:bg-zucht-blue/90">
+                          <Upload className="h-4 w-4 mr-2" /> Hochladen
+                        </Button>
+                      </DialogFooter>
+                    </form>
+                  </DialogContent>
+                </Dialog>
               </div>
             </TabsContent>
           </Tabs>
