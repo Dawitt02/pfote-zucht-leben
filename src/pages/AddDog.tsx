@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { Dog, Calendar, Award, Camera, Plus, ArrowLeft, FileText, Activity } from 'lucide-react';
+import { Dog, Calendar, Award, Camera, Plus, ArrowLeft, FileText, Activity, Save } from 'lucide-react';
 import { toast } from "sonner";
 
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from "@/components/ui/form";
@@ -687,12 +687,23 @@ const AddDog = () => {
               </Accordion>
               
               {/* Submit Button */}
-              <Button 
-                type="submit" 
-                className="w-full bg-zucht-amber hover:bg-zucht-amber/90"
-              >
-                Hund hinzufügen
-              </Button>
+              <div className="flex gap-4">
+                <Button 
+                  type="submit" 
+                  className="flex-1 bg-zucht-amber hover:bg-zucht-amber/90"
+                >
+                  <Save className="mr-2 h-4 w-4" />
+                  Hund speichern
+                </Button>
+                <Button 
+                  type="button" 
+                  variant="outline"
+                  className="flex-1"
+                  onClick={() => navigate('/dogs')}
+                >
+                  Abbrechen
+                </Button>
+              </div>
             </form>
           </Form>
         </div>
