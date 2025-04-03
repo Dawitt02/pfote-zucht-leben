@@ -119,7 +119,7 @@ const AddDog = () => {
 
   return (
     <div className="flex flex-col h-full bg-zucht-cream">
-      <main className="flex-1 overflow-auto pb-16">
+      <main className="flex-1 overflow-auto pb-28">
         <div className="app-container">
           <div className="flex items-center mb-6">
             <Button 
@@ -729,23 +729,25 @@ const AddDog = () => {
                 </AccordionItem>
               </Accordion>
               
-              {/* Submit Button */}
-              <div className="flex gap-4">
-                <Button 
-                  type="submit" 
-                  className="flex-1 bg-zucht-amber hover:bg-zucht-amber/90"
-                >
-                  <Save className="mr-2 h-4 w-4" />
-                  Hund speichern
-                </Button>
-                <Button 
-                  type="button" 
-                  variant="outline"
-                  className="flex-1"
-                  onClick={() => navigate('/dogs')}
-                >
-                  Abbrechen
-                </Button>
+              {/* Submit Button - Moved outside of accordion for always visibility */}
+              <div className="sticky bottom-20 bg-zucht-cream pt-4 pb-2 border-t border-gray-200 mt-6">
+                <div className="flex gap-4">
+                  <Button 
+                    type="submit" 
+                    className="flex-1 bg-zucht-amber hover:bg-zucht-amber/90"
+                  >
+                    <Save className="mr-2 h-4 w-4" />
+                    Hund speichern
+                  </Button>
+                  <Button 
+                    type="button" 
+                    variant="outline"
+                    className="flex-1"
+                    onClick={() => navigate('/dogs')}
+                  >
+                    Abbrechen
+                  </Button>
+                </div>
               </div>
             </form>
           </Form>
