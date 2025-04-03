@@ -1,3 +1,4 @@
+
 import React, { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -83,11 +84,16 @@ const AddDog = () => {
 
   const handleImageChange = (dataUrl: string) => {
     setImagePreview(dataUrl);
-    form.setValue('imageUrl', dataUrl);
+    form.setValue('imageUrl', dataUrl, { 
+      shouldValidate: true,
+      shouldDirty: true,
+    });
   };
 
   const triggerFileInput = () => {
-    fileInputRef.current?.click();
+    if (fileInputRef.current) {
+      fileInputRef.current.click();
+    }
   };
 
   function onSubmit(data: DogFormValues) {

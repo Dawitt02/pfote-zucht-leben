@@ -1,4 +1,3 @@
-
 import * as React from "react"
 import * as LabelPrimitive from "@radix-ui/react-label"
 import { Slot } from "@radix-ui/react-slot"
@@ -165,7 +164,6 @@ const FormMessage = React.forwardRef<
 })
 FormMessage.displayName = "FormMessage"
 
-// New component for file inputs
 const FormFileInput = React.forwardRef<
   HTMLInputElement,
   React.InputHTMLAttributes<HTMLInputElement> & {
@@ -177,8 +175,8 @@ const FormFileInput = React.forwardRef<
     const file = event.target.files?.[0];
     if (file && onImageChange) {
       const reader = new FileReader();
-      reader.onload = (e) => {
-        const result = e.target?.result;
+      reader.onloadend = () => {
+        const result = reader.result;
         if (typeof result === 'string') {
           onImageChange(result);
         }
