@@ -7,7 +7,8 @@ import {
   Award,
   ChevronRight,
   PawPrint,
-  Heart
+  Heart,
+  Baby
 } from 'lucide-react';
 
 import {
@@ -38,6 +39,7 @@ import Navbar from '@/components/Navbar';
 import BreedingCalendar from '@/components/breeding/BreedingCalendar';
 import HeatCycleForm from '@/components/breeding/HeatCycleForm';
 import BreedingForm from '@/components/breeding/BreedingForm';
+import BirthForm from '@/components/breeding/BirthForm';
 import { useDogs } from '@/context/DogContext';
 import { format, addDays } from 'date-fns';
 import { de } from 'date-fns/locale';
@@ -46,7 +48,9 @@ const Breeding = () => {
   const { dogs, heatCycles, breedingEvents, litters } = useDogs();
   const [isAddHeatDialogOpen, setIsAddHeatDialogOpen] = useState(false);
   const [isAddBreedingDialogOpen, setIsAddBreedingDialogOpen] = useState(false);
+  const [isAddBirthDialogOpen, setIsAddBirthDialogOpen] = useState(false);
   const [selectedDogId, setSelectedDogId] = useState<string | undefined>(undefined);
+  const [selectedLitterId, setSelectedLitterId] = useState<string | undefined>(undefined);
   
   const femaleDogsOnly = dogs.filter(dog => dog.gender === 'female');
   
@@ -73,6 +77,8 @@ const Breeding = () => {
     .sort((a, b) => new Date(b.breedingDate).getTime() - new Date(a.breedingDate).getTime())
     .slice(0, 3); // Get the 3 most recent breedings
   
+  const pendingBirths = litters.filter(litter => !litter.birthDate);
+  
   const statistics = {
     totalHeatCycles: heatCycles.length,
     upcomingHeatCycles: lastHeatCycles.filter(
@@ -81,12 +87,17 @@ const Breeding = () => {
     activeFemales: femaleDogsOnly.filter(dog => 
       dog.breedingStatus === 'Zuchttauglich' || dog.breedingStatus === 'Aktiv'
     ).length,
-    activeBreedings: litters.filter(litter => !litter.birthDate).length
+    activeBreedings: pendingBirths.length
   };
 
   const handleDogBreeding = (dogId: string) => {
     setSelectedDogId(dogId);
     setIsAddBreedingDialogOpen(true);
+  };
+
+  const handleLitterBirth = (litterId: string) => {
+    setSelectedLitterId(litterId);
+    setIsAddBirthDialogOpen(true);
   };
 
   return (
@@ -98,6 +109,13 @@ const Breeding = () => {
               <h1 className="text-2xl font-bold">Zuchtplanung</h1>
               <div className="flex gap-2">
                 <Button
+                  onClick={() => setIsAddBirthDialogOpen(true)}
+                  className="bg-zucht-blue hover:bg-zucht-blue/90"
+                >
+                  <Baby className="h-4 w-4 mr-2" />
+                  Wurf eintragen
+                </Button>
+                <Button
                   onClick={() => setIsAddBreedingDialogOpen(true)}
                   className="bg-zucht-amber hover:bg-zucht-amber/90"
                 >
@@ -106,10 +124,10 @@ const Breeding = () => {
                 </Button>
                 <Button
                   onClick={() => setIsAddHeatDialogOpen(true)}
-                  className="bg-zucht-blue hover:bg-zucht-blue/90"
+                  variant="outline"
                 >
                   <PlusCircle className="h-4 w-4 mr-2" />
-                  Läufigkeit eintragen
+                  Läufigkeit
                 </Button>
               </div>
             </div>
@@ -148,7 +166,7 @@ const Breeding = () => {
               <Card>
                 <CardHeader className="pb-2">
                   <CardTitle className="text-sm font-medium">
-                    Laufende Trächtigkeiten
+                    Anstehende Würfe
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -359,35 +377,85 @@ const Breeding = () => {
                   <CardContent>
                     {recentBreedings.length > 0 ? (
                       <div className="space-y-4">
-                        <h3 className="text-sm font-medium">Aktuelle Verpaarungen</h3>
-                        <div className="space-y-3">
-                          {recentBreedings.map(litter => {
-                            const dogName = dogs.find(d => d.id === litter.dogId)?.name || 'Unbekannt';
-                            const expectedBirthDate = new Date(litter.breedingDate);
-                            expectedBirthDate.setDate(expectedBirthDate.getDate() + 60);
-                            
-                            return (
-                              <div key={litter.id} className="bg-white p-4 rounded-lg border shadow-sm">
-                                <div className="flex justify-between items-start">
-                                  <div>
-                                    <h4 className="font-medium">{dogName}</h4>
-                                    <p className="text-sm text-muted-foreground">
-                                      Deckdatum: {format(new Date(litter.breedingDate), 'dd.MM.yyyy', { locale: de })}
-                                    </p>
-                                    <p className="text-sm text-zucht-blue mt-1">
-                                      Erwarteter Wurf: {format(expectedBirthDate, 'dd.MM.yyyy', { locale: de })}
-                                    </p>
+                        {pendingBirths.length > 0 && (
+                          <>
+                            <h3 className="text-sm font-medium">Anstehende Geburten</h3>
+                            <div className="space-y-3">
+                              {pendingBirths.map(litter => {
+                                const dogName = dogs.find(d => d.id === litter.dogId)?.name || 'Unbekannt';
+                                const expectedBirthDate = new Date(litter.breedingDate);
+                                expectedBirthDate.setDate(expectedBirthDate.getDate() + 60);
+                                
+                                return (
+                                  <div key={litter.id} className="bg-white p-4 rounded-lg border shadow-sm">
+                                    <div className="flex justify-between items-start">
+                                      <div>
+                                        <h4 className="font-medium">{dogName}</h4>
+                                        <p className="text-sm text-muted-foreground">
+                                          Deckdatum: {format(new Date(litter.breedingDate), 'dd.MM.yyyy', { locale: de })}
+                                        </p>
+                                        <p className="text-sm text-zucht-blue mt-1">
+                                          Erwarteter Wurf: {format(expectedBirthDate, 'dd.MM.yyyy', { locale: de })}
+                                        </p>
+                                      </div>
+                                      <Button 
+                                        variant="outline" 
+                                        size="sm"
+                                        className="text-xs"
+                                        onClick={() => handleLitterBirth(litter.id)}
+                                      >
+                                        <Baby className="h-3 w-3 mr-1" />
+                                        Geburt eintragen
+                                      </Button>
+                                    </div>
+                                    {litter.notes && (
+                                      <p className="text-sm mt-2 text-muted-foreground">{litter.notes}</p>
+                                    )}
                                   </div>
-                                  <Button variant="ghost" size="icon">
-                                    <ChevronRight className="h-4 w-4" />
-                                  </Button>
+                                );
+                              })}
+                            </div>
+                          </>
+                        )}
+                        
+                        <h3 className="text-sm font-medium mt-6">Aktuelle Würfe</h3>
+                        <div className="space-y-3">
+                          {litters
+                            .filter(litter => litter.birthDate)
+                            .sort((a, b) => new Date(b.birthDate!).getTime() - new Date(a.birthDate!).getTime())
+                            .slice(0, 3)
+                            .map(litter => {
+                              const dogName = dogs.find(d => d.id === litter.dogId)?.name || 'Unbekannt';
+                              
+                              return (
+                                <div key={litter.id} className="bg-white p-4 rounded-lg border shadow-sm">
+                                  <div className="flex justify-between items-start">
+                                    <div>
+                                      <h4 className="font-medium">{dogName}</h4>
+                                      <p className="text-sm">
+                                        <span className="text-zucht-blue font-medium">
+                                          {litter.puppyCount || 0} Welpen
+                                        </span>
+                                        {litter.males && litter.females ? (
+                                          <span className="text-muted-foreground"> 
+                                            ({litter.males} Rüden, {litter.females} Hündinnen)
+                                          </span>
+                                        ) : null}
+                                      </p>
+                                      <p className="text-sm text-muted-foreground">
+                                        Geboren am: {format(new Date(litter.birthDate!), 'dd.MM.yyyy', { locale: de })}
+                                      </p>
+                                    </div>
+                                    <Button variant="ghost" size="icon">
+                                      <ChevronRight className="h-4 w-4" />
+                                    </Button>
+                                  </div>
+                                  {litter.notes && (
+                                    <p className="text-sm mt-2 text-muted-foreground">{litter.notes}</p>
+                                  )}
                                 </div>
-                                {litter.notes && (
-                                  <p className="text-sm mt-2 text-muted-foreground">{litter.notes}</p>
-                                )}
-                              </div>
-                            );
-                          })}
+                              );
+                            })}
                         </div>
                       </div>
                     ) : (
@@ -442,6 +510,24 @@ const Breeding = () => {
               setSelectedDogId(undefined);
             }}
             preselectedDogId={selectedDogId}
+          />
+        </DialogContent>
+      </Dialog>
+      
+      <Dialog open={isAddBirthDialogOpen} onOpenChange={setIsAddBirthDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Wurfdaten eintragen</DialogTitle>
+            <DialogDescription>
+              Tragen Sie das Geburtsdatum und die Anzahl der Welpen ein. Alle wichtigen Termine für die Welpenpflege werden automatisch erstellt.
+            </DialogDescription>
+          </DialogHeader>
+          <BirthForm 
+            onSubmit={() => {
+              setIsAddBirthDialogOpen(false);
+              setSelectedLitterId(undefined);
+            }}
+            preselectedLitterId={selectedLitterId}
           />
         </DialogContent>
       </Dialog>

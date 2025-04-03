@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 
 // Document type definition
@@ -27,7 +26,7 @@ export interface HeatCycle {
 // Breeding event type definition
 export interface BreedingEvent {
   id: string;
-  type: 'heatStart' | 'breeding' | 'ultrasound' | 'birthExpected' | 'reminder' | 'other';
+  type: 'heatStart' | 'breeding' | 'ultrasound' | 'birthExpected' | 'birth' | 'deworming' | 'vaccination' | 'chipping' | 'inspection' | 'handover' | 'socialization' | 'photos' | 'paperwork' | 'reminder' | 'other';
   title: string;
   dogId: string;
   date: Date;
@@ -38,6 +37,7 @@ export interface BreedingEvent {
     owner?: string;
     breederId?: string;
   };
+  relatedLitterId?: string;
 }
 
 // Litter type definition
@@ -122,6 +122,7 @@ interface DogContextType {
   addPuppy: (litterId: string, puppy: Omit<Puppy, 'id' | 'litterId'>) => Puppy;
   updatePuppy: (puppy: Puppy) => void;
   removePuppy: (puppyId: string) => void;
+  recordBirth: (litterId: string, birthDate: Date, puppyCount?: number, males?: number, females?: number, notes?: string) => void;
 }
 
 const DogContext = createContext<DogContextType | undefined>(undefined);
@@ -401,7 +402,8 @@ export const DogProvider = ({ children }: { children: ReactNode }) => {
         dogId: litter.dogId,
         date: birthExpectedDate,
         notes: `Erwarteter Wurf von ${dogName} und ${studName} basierend auf dem Deckdatum`,
-        color: '#D3E4FD' // Soft Blue
+        color: '#D3E4FD', // Soft Blue
+        relatedLitterId: id
       });
     }
     
@@ -452,6 +454,11 @@ export const DogProvider = ({ children }: { children: ReactNode }) => {
           !(event.type === 'birthExpected' && event.dogId === litterToRemove.dogId &&
             new Date(event.date).toDateString() === birthDate.toDateString())
         )
+      );
+      
+      // Also remove all events related to this litter
+      setBreedingEvents(prev => 
+        prev.filter(event => event.relatedLitterId !== litterId)
       );
     }
     
@@ -507,6 +514,135 @@ export const DogProvider = ({ children }: { children: ReactNode }) => {
     );
   };
 
+  // New function to record birth and schedule events
+  const recordBirth = (litterId: string, birthDate: Date, puppyCount?: number, males?: number, females?: number, notes?: string) => {
+    // 1. Update the litter record with birth information
+    const litter = litters.find(l => l.id === litterId);
+    if (!litter) return;
+    
+    const dogName = dogs.find(d => d.id === litter.dogId)?.name || 'Hündin';
+    
+    const updatedLitter: Litter = {
+      ...litter,
+      birthDate,
+      puppyCount: puppyCount || litter.puppyCount,
+      males: males || litter.males,
+      females: females || litter.females,
+      notes: notes || litter.notes
+    };
+    
+    updateLitter(updatedLitter);
+    
+    // 2. Create birth event
+    addBreedingEvent({
+      type: 'birth',
+      title: `Geburt: ${dogName}`,
+      dogId: litter.dogId,
+      date: birthDate,
+      notes: `Wurf von ${dogName} mit ${puppyCount || 'unbekannter Anzahl'} Welpen`,
+      color: '#FFDEE2', // Soft Pink
+      relatedLitterId: litterId
+    });
+    
+    // 3. Schedule all related events
+    
+    // A) Deworming (Entwurmung)
+    const dewormingDates = [
+      { weeks: 3, title: "Erste Entwurmung" },
+      { weeks: 5, title: "Zweite Entwurmung" },
+      { weeks: 7, title: "Dritte Entwurmung" },
+      { weeks: 11, title: "Vierte Entwurmung" }
+    ];
+    
+    dewormingDates.forEach(({ weeks, title }) => {
+      const dewormDate = new Date(birthDate);
+      dewormDate.setDate(birthDate.getDate() + (weeks * 7));
+      
+      addBreedingEvent({
+        type: 'deworming',
+        title,
+        dogId: litter.dogId,
+        date: dewormDate,
+        notes: `${title} der Welpen von ${dogName}`,
+        color: '#E6F7C1', // Light Green
+        relatedLitterId: litterId
+      });
+    });
+    
+    // B) Vaccinations & Chipping
+    const vaccinationDates = [
+      { weeks: 7.5, title: "Erste Impfung & Chippen", type: 'vaccination' },
+      { weeks: 12, title: "Zweite Impfung", type: 'vaccination' },
+      { weeks: 16, title: "Tollwut-Impfung", type: 'vaccination' }
+    ];
+    
+    vaccinationDates.forEach(({ weeks, title, type }) => {
+      const vaccDate = new Date(birthDate);
+      vaccDate.setDate(birthDate.getDate() + Math.round(weeks * 7));
+      
+      addBreedingEvent({
+        type: type as any,
+        title,
+        dogId: litter.dogId,
+        date: vaccDate,
+        notes: `${title} der Welpen von ${dogName}`,
+        color: '#D3E4FD', // Soft Blue
+        relatedLitterId: litterId
+      });
+    });
+    
+    // C) Inspection & Handover
+    // Wurfabnahme
+    const inspectionDate = new Date(birthDate);
+    inspectionDate.setDate(birthDate.getDate() + (8 * 7));
+    
+    addBreedingEvent({
+      type: 'inspection',
+      title: "Wurfabnahme",
+      dogId: litter.dogId,
+      date: inspectionDate,
+      notes: `Wurfabnahme durch Zuchtwart für die Welpen von ${dogName}`,
+      color: '#F9EBD9', // Soft Orange
+      relatedLitterId: litterId
+    });
+    
+    // Welpenabgabe
+    const handoverDate = new Date(birthDate);
+    handoverDate.setDate(birthDate.getDate() + (9 * 7));
+    
+    addBreedingEvent({
+      type: 'handover',
+      title: "Welpenabgabe möglich",
+      dogId: litter.dogId,
+      date: handoverDate,
+      notes: `Ab heute können die Welpen von ${dogName} abgegeben werden`,
+      color: '#F9EBD9', // Soft Orange
+      relatedLitterId: litterId
+    });
+    
+    // D) Other reminders
+    const otherReminders = [
+      { weeks: 6, title: "Sozialisierungsphase beginnt", type: 'socialization', notes: "Umwelterfahrungen anbieten (Auto fahren, Geräusche, fremde Menschen)", color: '#FFF2CC' },
+      { weeks: 8, title: "Welpenfotos machen", type: 'photos', notes: "Erinnerung: Welpenfotos für zukünftige Besitzer machen", color: '#FFF2CC' },
+      { weeks: 9, title: "Papiere vorbereiten", type: 'paperwork', notes: "Verträge & Papiere für Welpenkäufer vorbereiten", color: '#FFF2CC' }
+    ];
+    
+    otherReminders.forEach(({ weeks, title, type, notes, color }) => {
+      const reminderDate = new Date(birthDate);
+      reminderDate.setDate(birthDate.getDate() + (weeks * 7));
+      
+      addBreedingEvent({
+        type: type as any,
+        title,
+        dogId: litter.dogId,
+        date: reminderDate,
+        notes,
+        color,
+        relatedLitterId: litterId
+      });
+    });
+  };
+
   return (
     <DogContext.Provider value={{ 
       dogs, 
@@ -528,7 +664,8 @@ export const DogProvider = ({ children }: { children: ReactNode }) => {
       removeLitter,
       addPuppy,
       updatePuppy,
-      removePuppy
+      removePuppy,
+      recordBirth
     }}>
       {children}
     </DogContext.Provider>
