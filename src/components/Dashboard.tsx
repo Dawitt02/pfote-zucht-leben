@@ -36,8 +36,8 @@ export function Dashboard({ className }: DashboardProps) {
 
       <div className="grid grid-cols-3 gap-3">
         <QuickAction to="/dogs/add" icon={<Plus className="h-5 w-5" />} label="Hund hinzufügen" color="amber" />
-        <QuickAction to="/breeding/plan" icon={<Calendar className="h-5 w-5" />} label="Zuchtplanung" color="blue" />
-        <QuickAction to="/health/record" icon={<Activity className="h-5 w-5" />} label="Gesundheitscheck" color="green" />
+        <QuickAction to="/breeding" icon={<Calendar className="h-5 w-5" />} label="Zuchtplanung" color="blue" />
+        <QuickAction to="/health" icon={<Activity className="h-5 w-5" />} label="Gesundheitscheck" color="green" />
       </div>
 
       <section>
