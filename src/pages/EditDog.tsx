@@ -5,7 +5,6 @@ import { toast } from "sonner";
 import { ArrowLeft } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
-import Navbar from '@/components/Navbar';
 import { useDogs } from '@/context/DogContext';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import DogFormWithDocuments from '@/components/DogFormWithDocuments';

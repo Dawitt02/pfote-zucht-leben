@@ -33,7 +33,7 @@ function App() {
               <Route path="dogs" element={<DogProfiles />} />
               <Route path="dogs/:dogId" element={<DogDetail />} />
               <Route path="dogs/add" element={<AddDog />} />
-              <Route path="dogs/edit/:dogId" element={<EditDog />} />
+              <Route path="dogs/:dogId/edit" element={<EditDog />} />
               <Route path="health" element={<Health />} />
               <Route path="breeding" element={<Breeding />} />
               <Route path="breeding/litter/:litterId" element={<LitterDetail />} />
