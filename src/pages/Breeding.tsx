@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import {
   PlusCircle,
@@ -6,7 +5,7 @@ import {
   Dog,
   Award,
   ChevronRight,
-  Paw
+  PawPrint
 } from 'lucide-react';
 
 import {
@@ -45,7 +44,6 @@ const Breeding = () => {
   const [isAddHeatDialogOpen, setIsAddHeatDialogOpen] = useState(false);
   const femaleDogsOnly = dogs.filter(dog => dog.gender === 'female');
   
-  // Get the last heat cycle for each dog
   const lastHeatCycles = femaleDogsOnly.map(dog => {
     const dogHeatCycles = heatCycles
       .filter(cycle => cycle.dogId === dog.id)
@@ -55,18 +53,16 @@ const Breeding = () => {
       dog,
       lastHeat: dogHeatCycles.length > 0 ? dogHeatCycles[0] : null,
       nextExpectedHeat: dogHeatCycles.length > 0 
-        ? addDays(new Date(dogHeatCycles[0].startDate), 180) // Approx 6 months later
+        ? addDays(new Date(dogHeatCycles[0].startDate), 180)
         : null
     };
   });
   
-  // Get upcoming breeding events
   const upcomingEvents = breedingEvents
     .filter(event => new Date(event.date) >= new Date())
     .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
     .slice(0, 5);
   
-  // Calculate breeding statistics
   const statistics = {
     totalHeatCycles: heatCycles.length,
     upcomingHeatCycles: lastHeatCycles.filter(
@@ -137,7 +133,7 @@ const Breeding = () => {
                   Hündinnen
                 </TabsTrigger>
                 <TabsTrigger value="litters">
-                  <Paw className="h-4 w-4 mr-2" />
+                  <PawPrint className="h-4 w-4 mr-2" />
                   Würfe
                 </TabsTrigger>
               </TabsList>
@@ -295,7 +291,7 @@ const Breeding = () => {
                   </CardHeader>
                   <CardContent className="text-center py-10">
                     <div className="flex flex-col items-center">
-                      <Paw className="h-12 w-12 text-muted-foreground mb-4" />
+                      <PawPrint className="h-12 w-12 text-muted-foreground mb-4" />
                       <h3 className="text-lg font-medium mb-2">Keine Würfe vorhanden</h3>
                       <p className="text-muted-foreground mb-4 max-w-md">
                         Hier können Sie Informationen zu Ihren Würfen verwalten, sobald eine Ihrer Hündinnen trächtig ist.

@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { Calendar as CalendarIcon, Plus } from 'lucide-react';
 import { format, isSameDay, isSameMonth, isWithinInterval } from 'date-fns';
 import { de } from 'date-fns/locale';
+import { DayContent, DayContentProps } from 'react-day-picker';
 
 import {
   Card,
@@ -46,7 +47,9 @@ const BreedingCalendar = ({ onSelectDate, onAddEvent }: BreedingCalendarProps) =
     }));
 
   // Custom day render function to mark days with events
-  const renderDay = (day: Date) => {
+  const renderDay = (props: DayContentProps) => {
+    const day = props.date;
+    
     // Check if there are events on this day
     const hasEvent = eventsInCurrentMonth.some(event => 
       isSameDay(new Date(event.date), day)
@@ -54,7 +57,7 @@ const BreedingCalendar = ({ onSelectDate, onAddEvent }: BreedingCalendarProps) =
 
     // Check if this day is in a fertility period
     const isFertileDay = fertilityPeriods.some(period => 
-      isWithinInterval(day, { start: period.start, end: period.end })
+      isWithinInterval(day, { start: new Date(period.start), end: new Date(period.end) })
     );
 
     // Check if this day is a heat start
@@ -90,6 +93,7 @@ const BreedingCalendar = ({ onSelectDate, onAddEvent }: BreedingCalendarProps) =
           "h-9 w-9 p-0 font-normal relative flex items-center justify-center",
           dayClassName
         )}
+        {...props}
       >
         <div>{format(day, 'd')}</div>
         {hasEvent && (
@@ -144,7 +148,7 @@ const BreedingCalendar = ({ onSelectDate, onAddEvent }: BreedingCalendarProps) =
             onMonthChange={setCurrentMonth}
             locale={de}
             components={{
-              Day: renderDay
+              DayContent: renderDay
             }}
             className="rounded-md border"
           />
