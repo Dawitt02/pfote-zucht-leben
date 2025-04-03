@@ -709,8 +709,8 @@ const AddDog = () => {
         </div>
       </main>
       
-      {/* Position the buttons at the absolute bottom, flush with navbar */}
-      <div className="fixed bottom-0 left-0 right-0 bg-zucht-cream border-t border-gray-200 py-4 px-4 z-50">
+      {/* Position the buttons above the navbar with clear separation */}
+      <div className="fixed bottom-16 left-0 right-0 bg-zucht-amber/10 border-t border-zucht-amber/30 py-4 px-4 z-40 shadow-[0_-2px_10px_rgba(0,0,0,0.05)]">
         <div className="flex gap-4 max-w-md mx-auto">
           <Button 
             type="submit" 
