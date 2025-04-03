@@ -142,7 +142,11 @@ const DogProfiles = () => {
                 <Button 
                   className="absolute top-2 right-2 bg-zucht-blue hover:bg-zucht-blue/90 p-2 h-8 w-8" 
                   size="icon"
-                  onClick={() => handleUploadClick(dog.id)}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    handleUploadClick(dog.id);
+                  }}
                 >
                   <Upload className="h-4 w-4" />
                 </Button>
