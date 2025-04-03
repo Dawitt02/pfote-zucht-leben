@@ -8,6 +8,7 @@ import Index from "./pages/Index";
 import DogProfiles from "./pages/DogProfiles";
 import DogDetail from "./pages/DogDetail";
 import AddDog from "./pages/AddDog";
+import EditDog from "./pages/EditDog";
 import Breeding from "./pages/Breeding";
 import Health from "./pages/Health";
 import Community from "./pages/Community";
@@ -27,6 +28,7 @@ const App = () => {
             <Route path="/dogs" element={<DogProfiles />} />
             <Route path="/dogs/add" element={<AddDog />} />
             <Route path="/dogs/:id" element={<DogDetail />} />
+            <Route path="/dogs/:id/edit" element={<EditDog />} />
             <Route path="/dogs/:id/documents" element={<DogProfiles />} />
             <Route path="/breeding" element={<Breeding />} />
             <Route path="/health" element={<Health />} />

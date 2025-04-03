@@ -16,11 +16,27 @@ export interface Dog {
   chipNumber?: string;
   notes?: string;
   hasStandardPhotos?: boolean;
+  
+  // Additional properties needed for EditDog
+  pedigree?: string;
+  geneticTestResults?: string;
+  inbreedingCoefficient?: string;
+  healthStatus?: string;
+  vaccinationHistory?: string;
+  weight?: string;
+  size?: string;
+  cycleInformation?: string;
+  breedingHistory?: string;
+  litterInformation?: string;
+  breedingRestrictions?: string;
+  exhibitionResults?: string;
+  temperamentAssessment?: string;
 }
 
 interface DogContextType {
   dogs: Dog[];
   addDog: (dog: Omit<Dog, 'id'>) => void;
+  updateDog: (dog: Dog) => void; // Add the updateDog function
 }
 
 const DogContext = createContext<DogContextType | undefined>(undefined);
@@ -76,8 +92,17 @@ export const DogProvider = ({ children }: { children: ReactNode }) => {
     setDogs(prevDogs => [...prevDogs, { id, ...newDog }]);
   };
 
+  // Add the updateDog function implementation
+  const updateDog = (updatedDog: Dog) => {
+    setDogs(prevDogs => 
+      prevDogs.map(dog => 
+        dog.id === updatedDog.id ? updatedDog : dog
+      )
+    );
+  };
+
   return (
-    <DogContext.Provider value={{ dogs, addDog }}>
+    <DogContext.Provider value={{ dogs, addDog, updateDog }}>
       {children}
     </DogContext.Provider>
   );
