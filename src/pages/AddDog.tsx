@@ -1,4 +1,3 @@
-
 import React, { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -102,6 +101,16 @@ const AddDog = () => {
     setTimeout(() => navigate('/dogs'), 1500);
   }
 
+  const handleCancel = () => {
+    if (form.formState.isDirty) {
+      if (window.confirm("Möchten Sie wirklich abbrechen? Alle eingegebenen Daten gehen verloren.")) {
+        navigate('/dogs');
+      }
+    } else {
+      navigate('/dogs');
+    }
+  };
+
   return (
     <div className="flex flex-col min-h-screen bg-zucht-cream">
       <main className="flex-1 overflow-auto pb-28">
@@ -111,7 +120,7 @@ const AddDog = () => {
               variant="ghost" 
               size="icon" 
               className="mr-2"
-              onClick={() => navigate('/dogs')}
+              onClick={handleCancel}
             >
               <ArrowLeft className="h-5 w-5" />
             </Button>
@@ -119,7 +128,7 @@ const AddDog = () => {
           </div>
 
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            <form id="add-dog-form" onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
               <div className="flex flex-col items-center mb-6">
                 <FormField
                   control={form.control}
@@ -709,7 +718,6 @@ const AddDog = () => {
         </div>
       </main>
       
-      {/* Position the buttons above the navbar with clear separation */}
       <div className="fixed bottom-16 left-0 right-0 bg-zucht-amber/10 border-t border-zucht-amber/30 py-4 px-4 z-40 shadow-[0_-2px_10px_rgba(0,0,0,0.05)]">
         <div className="flex gap-4 max-w-md mx-auto">
           <Button 
@@ -724,7 +732,7 @@ const AddDog = () => {
             type="button" 
             variant="outline"
             className="flex-1"
-            onClick={() => navigate('/dogs')}
+            onClick={handleCancel}
           >
             Abbrechen
           </Button>
