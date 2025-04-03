@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { ChevronRight, Bell, Plus, Dog, Calendar, Activity } from 'lucide-react';
@@ -6,44 +5,16 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import DogCard from './DogCard';
+import { useDogs } from '@/context/DogContext';
 
 interface DashboardProps {
   className?: string;
 }
 
 export function Dashboard({ className }: DashboardProps) {
-  // Mock data - in a real app this would come from your state management
-  const myDogs = [
-    {
-      id: '1',
-      name: 'Luna',
-      breed: 'Golden Retriever',
-      age: '3 Jahre',
-      gender: 'female' as const,
-      imageUrl: 'https://images.unsplash.com/photo-1552053831-71594a27632d?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80',
-      breedingStatus: 'Zuchttauglich',
-      achievements: ['Ausstellung A']
-    },
-    {
-      id: '2',
-      name: 'Max',
-      breed: 'Deutscher Schäferhund',
-      age: '4 Jahre',
-      gender: 'male' as const,
-      imageUrl: 'https://images.unsplash.com/photo-1589941013453-ec89f33b5e95?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80',
-      breedingStatus: 'Aktiv',
-      achievements: ['Schutzhund IPO1', 'Ausstellung B']
-    },
-    {
-      id: '3',
-      name: 'Bella',
-      breed: 'Labrador Retriever',
-      age: '2 Jahre',
-      gender: 'female' as const,
-      imageUrl: 'https://images.unsplash.com/photo-1591769225440-811ad7d6eab2?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80',
-      breedingStatus: 'In Vorbereitung'
-    }
-  ];
+  // Use context instead of mock data
+  const { dogs } = useDogs();
+  const myDogs = dogs.slice(0, 3); // Show only first 3 dogs in dashboard
 
   const upcomingEvents = [
     { id: '1', date: '15.04.2025', title: 'Tierarzttermin für Luna', type: 'health' },

@@ -1,19 +1,20 @@
 
 import React from 'react';
-import Dashboard from '@/components/Dashboard';
+import { Dashboard } from '@/components/Dashboard';
 import Navbar from '@/components/Navbar';
+import AppWrapper from '@/components/AppWrapper';
 
-const Index = () => {
+export default function Index() {
   return (
-    <div className="flex flex-col h-full bg-zucht-cream">
-      <main className="flex-1 overflow-auto pb-16">
-        <div className="app-container">
-          <Dashboard />
-        </div>
-      </main>
-      <Navbar />
-    </div>
+    <AppWrapper>
+      <div className="flex flex-col h-full bg-zucht-cream">
+        <main className="flex-1 overflow-auto pb-16">
+          <div className="app-container">
+            <Dashboard />
+          </div>
+        </main>
+        <Navbar />
+      </div>
+    </AppWrapper>
   );
-};
-
-export default Index;
+}

@@ -1,10 +1,10 @@
-
 import React, { useState } from 'react';
 import { Plus, Upload, FileText, Image, Video, File } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
 import DogCard from '@/components/DogCard';
 import Navbar from '@/components/Navbar';
+import { useDogs } from '@/context/DogContext';
 import {
   Dialog,
   DialogContent,
@@ -25,54 +25,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Label } from '@/components/ui/label';
 
 const DogProfiles = () => {
+  const { dogs } = useDogs();
   const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
   const [selectedDog, setSelectedDog] = useState<string | null>(null);
   const [documentCategory, setDocumentCategory] = useState("pedigree");
   const [selectedFiles, setSelectedFiles] = useState<FileList | null>(null);
   const [uploadTab, setUploadTab] = useState("documents");
-
-  // Mock data - in a real app this would come from your state management
-  const dogs = [
-    {
-      id: '1',
-      name: 'Luna',
-      breed: 'Golden Retriever',
-      age: '3 Jahre',
-      gender: 'female' as const,
-      imageUrl: 'https://images.unsplash.com/photo-1552053831-71594a27632d?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80',
-      breedingStatus: 'Zuchttauglich',
-      achievements: ['Ausstellung A']
-    },
-    {
-      id: '2',
-      name: 'Max',
-      breed: 'Deutscher Schäferhund',
-      age: '4 Jahre',
-      gender: 'male' as const,
-      imageUrl: 'https://images.unsplash.com/photo-1589941013453-ec89f33b5e95?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80',
-      breedingStatus: 'Aktiv',
-      achievements: ['Schutzhund IPO1', 'Ausstellung B']
-    },
-    {
-      id: '3',
-      name: 'Bella',
-      breed: 'Labrador Retriever',
-      age: '2 Jahre',
-      gender: 'female' as const,
-      imageUrl: 'https://images.unsplash.com/photo-1591769225440-811ad7d6eab2?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80',
-      breedingStatus: 'In Vorbereitung'
-    },
-    {
-      id: '4',
-      name: 'Rocky',
-      breed: 'Boxer',
-      age: '5 Jahre',
-      gender: 'male' as const,
-      imageUrl: 'https://images.unsplash.com/photo-1535930891776-0c2dfb7fda1a?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80',
-      breedingStatus: 'Ruhend',
-      achievements: ['Ausstellung C']
-    }
-  ];
 
   const handleUploadClick = (dogId: string) => {
     setSelectedDog(dogId);
@@ -91,8 +49,6 @@ const DogProfiles = () => {
       return;
     }
 
-    // In a real app, you would upload the files to a server here
-    // For now, we'll just show a success message
     const fileNames = Array.from(selectedFiles).map(file => file.name).join(', ');
     
     const dogName = dogs.find(dog => dog.id === selectedDog)?.name || "Hund";

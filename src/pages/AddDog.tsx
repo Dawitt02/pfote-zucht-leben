@@ -21,6 +21,7 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import Navbar from '@/components/Navbar';
+import { useDogs } from '@/context/DogContext';
 
 const dogFormSchema = z.object({
   name: z.string().min(2, { message: "Der Name muss mindestens 2 Zeichen lang sein." }),
@@ -64,6 +65,7 @@ const AddDog = () => {
   const navigate = useNavigate();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const { addDog } = useDogs();
   
   const defaultValues: Partial<DogFormValues> = {
     name: "",
@@ -101,6 +103,22 @@ const AddDog = () => {
       toast.error("Bitte lade ein Bild des Hundes hoch.");
       return;
     }
+
+    // Add the new dog to the context
+    addDog({
+      name: data.name,
+      breed: data.breed,
+      age: data.age,
+      gender: data.gender,
+      imageUrl: data.imageUrl,
+      breedingStatus: data.breedingStatus || '',
+      achievements: data.achievements ? [data.achievements] : [],
+      fullName: data.fullName,
+      registrationNumber: data.registrationNumber,
+      chipNumber: data.chipNumber,
+      notes: data.notes,
+      hasStandardPhotos: data.hasStandardPhotos
+    });
 
     console.log("Form submitted:", data);
     toast.success("Hund erfolgreich hinzugefügt!");
