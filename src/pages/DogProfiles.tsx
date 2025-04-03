@@ -2,6 +2,7 @@
 import React from 'react';
 import { Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Link } from 'react-router-dom';
 import DogCard from '@/components/DogCard';
 import Navbar from '@/components/Navbar';
 
@@ -55,8 +56,10 @@ const DogProfiles = () => {
         <div className="app-container">
           <div className="flex justify-between items-center mb-6">
             <h1 className="text-2xl font-bold">Meine Hunde</h1>
-            <Button className="bg-zucht-amber hover:bg-zucht-amber/90">
-              <Plus className="h-4 w-4 mr-2" /> Hinzufügen
+            <Button className="bg-zucht-amber hover:bg-zucht-amber/90" asChild>
+              <Link to="/dogs/add">
+                <Plus className="h-4 w-4 mr-2" /> Hinzufügen
+              </Link>
             </Button>
           </div>
 
