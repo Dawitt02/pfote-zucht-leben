@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -138,9 +139,8 @@ const DogFormWithDocuments: React.FC<DogFormWithDocumentsProps> = ({ initialData
         description: `${values.name} wurde erfolgreich hinzugefügt.`,
       });
     } else if (mode === 'edit' && initialData) {
-      const achievements = values.achievements 
-        ? [values.achievements] 
-        : initialData.achievements || [];
+      // Ensure we maintain the original achievements if they exist
+      const achievements = initialData.achievements || [];
       
       updateDog({ 
         ...initialData, 
