@@ -4,7 +4,7 @@ import React, { createContext, useContext, useState, ReactNode } from 'react';
 export interface DogDocument {
   id: string;
   name: string;
-  category: string;
+  category: string; // Added category property for document type
   fileUrl: string;
   date: string;
   fileType: string;

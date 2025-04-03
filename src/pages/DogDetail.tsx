@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { 
@@ -9,7 +10,7 @@ import {
   Image, 
   Video, 
   Edit,
-  Dog,
+  Dog as DogIcon,
   Dna,
   Activity,
   Syringe,
@@ -173,7 +174,7 @@ const DogDetail = () => {
     const currentDate = new Date().toLocaleDateString('de-DE');
     
     const newDocument = {
-      type: uploadSubCategory,
+      category: uploadSubCategory,
       name: documentName || selectedFile.name,
       date: currentDate,
       fileType: fileType
@@ -237,10 +238,12 @@ const DogDetail = () => {
                     <span>Alter: {dog?.age}</span>
                   </div>
                   
-                  <div className="flex items-center">
-                    <Calendar className="h-4 w-4 mr-2 text-zucht-blue" />
-                    <span>Geboren: {dog?.birthDate}</span>
-                  </div>
+                  {dog?.age && (
+                    <div className="flex items-center">
+                      <Calendar className="h-4 w-4 mr-2 text-zucht-blue" />
+                      <span>Alter: {dog?.age}</span>
+                    </div>
+                  )}
                   
                   {dog?.breedingStatus && (
                     <div className="flex items-center">
@@ -251,10 +254,10 @@ const DogDetail = () => {
                     </div>
                   )}
                   
-                  {dog?.chip && (
+                  {dog?.chipNumber && (
                     <div className="flex items-center">
-                      <Dog className="h-4 w-4 mr-2 text-zucht-brown" />
-                      <span>Chip: {dog?.chip}</span>
+                      <DogIcon className="h-4 w-4 mr-2 text-zucht-brown" />
+                      <span>Chip: {dog?.chipNumber}</span>
                     </div>
                   )}
                 </div>
@@ -299,62 +302,23 @@ const DogDetail = () => {
                           <TableCell className="font-medium">Geschlecht</TableCell>
                           <TableCell>{dog?.gender === 'male' ? 'männlich' : 'weiblich'}</TableCell>
                         </TableRow>
-                        {dog?.color && (
-                          <TableRow>
-                            <TableCell className="font-medium">Farbe</TableCell>
-                            <TableCell>{dog?.color}</TableCell>
-                          </TableRow>
-                        )}
-                        {dog?.weight && (
-                          <TableRow>
-                            <TableCell className="font-medium">Gewicht</TableCell>
-                            <TableCell>{dog?.weight}</TableCell>
-                          </TableRow>
-                        )}
-                        {dog?.height && (
-                          <TableRow>
-                            <TableCell className="font-medium">Widerristhöhe</TableCell>
-                            <TableCell>{dog?.height}</TableCell>
-                          </TableRow>
-                        )}
+                        
                         <TableRow>
                           <TableCell className="font-medium">Zuchtstatus</TableCell>
                           <TableCell>{dog?.breedingStatus}</TableCell>
                         </TableRow>
                         <TableRow>
-                          <TableCell className="font-medium">Geburtsdatum</TableCell>
-                          <TableCell>{dog?.birthDate}</TableCell>
+                          <TableCell className="font-medium">Alter</TableCell>
+                          <TableCell>{dog?.age}</TableCell>
                         </TableRow>
                         <TableRow>
                           <TableCell className="font-medium">Chip-Nr.</TableCell>
-                          <TableCell>{dog?.chip}</TableCell>
+                          <TableCell>{dog?.chipNumber}</TableCell>
                         </TableRow>
                       </TableBody>
                     </Table>
                   </CardContent>
                 </Card>
-                
-                {dog?.parents && (
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="text-lg">Abstammung</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <Table>
-                        <TableBody>
-                          <TableRow>
-                            <TableCell className="font-medium w-1/3">Vater</TableCell>
-                            <TableCell>{dog?.parents.father}</TableCell>
-                          </TableRow>
-                          <TableRow>
-                            <TableCell className="font-medium">Mutter</TableCell>
-                            <TableCell>{dog?.parents.mother}</TableCell>
-                          </TableRow>
-                        </TableBody>
-                      </Table>
-                    </CardContent>
-                  </Card>
-                )}
                 
                 {dog?.achievements && dog?.achievements.length > 0 && (
                   <Card>
@@ -376,107 +340,35 @@ const DogDetail = () => {
               </TabsContent>
               
               <TabsContent value="health" className="space-y-4 py-4">
-                {dog?.healthTests && dog?.healthTests.length > 0 && (
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="text-lg">Gesundheitsuntersuchungen</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <Table>
-                        <TableHeader>
-                          <TableRow>
-                            <TableHead>Untersuchung</TableHead>
-                            <TableHead>Datum</TableHead>
-                            <TableHead>Ergebnis</TableHead>
-                            <TableHead>Dokument</TableHead>
-                          </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                          {dog?.healthTests.map((test, index) => (
-                            <TableRow key={index}>
-                              <TableCell className="font-medium">{test.name}</TableCell>
-                              <TableCell>{test.date}</TableCell>
-                              <TableCell>{test.result}</TableCell>
-                              <TableCell>
-                                <Button variant="ghost" size="sm" className="text-zucht-blue">
-                                  <FileText className="h-4 w-4 mr-2" /> Anzeigen
-                                </Button>
-                              </TableCell>
-                            </TableRow>
-                          ))}
-                        </TableBody>
-                      </Table>
-                    </CardContent>
-                  </Card>
-                )}
-                
-                {dog?.geneticTests && dog?.geneticTests.length > 0 && (
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="text-lg">Genetische Tests</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <Table>
-                        <TableHeader>
-                          <TableRow>
-                            <TableHead>Test</TableHead>
-                            <TableHead>Datum</TableHead>
-                            <TableHead>Ergebnis</TableHead>
-                            <TableHead>Dokument</TableHead>
-                          </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                          {dog?.geneticTests.map((test, index) => (
-                            <TableRow key={index}>
-                              <TableCell className="font-medium">{test.name}</TableCell>
-                              <TableCell>{test.date}</TableCell>
-                              <TableCell>{test.result}</TableCell>
-                              <TableCell>
-                                <Button variant="ghost" size="sm" className="text-zucht-blue">
-                                  <FileText className="h-4 w-4 mr-2" /> Anzeigen
-                                </Button>
-                              </TableCell>
-                            </TableRow>
-                          ))}
-                        </TableBody>
-                      </Table>
-                    </CardContent>
-                  </Card>
-                )}
-                
-                {dog?.vaccinations && dog?.vaccinations.length > 0 && (
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="text-lg">Impfungen</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <Table>
-                        <TableHeader>
-                          <TableRow>
-                            <TableHead>Impfung</TableHead>
-                            <TableHead>Datum</TableHead>
-                            <TableHead>Fällig</TableHead>
-                            <TableHead>Dokument</TableHead>
-                          </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                          {dog?.vaccinations.map((vaccination, index) => (
-                            <TableRow key={index}>
-                              <TableCell className="font-medium">{vaccination.name}</TableCell>
-                              <TableCell>{vaccination.date}</TableCell>
-                              <TableCell>{vaccination.nextDue}</TableCell>
-                              <TableCell>
-                                <Button variant="ghost" size="sm" className="text-zucht-blue">
-                                  <FileText className="h-4 w-4 mr-2" /> Anzeigen
-                                </Button>
-                              </TableCell>
-                            </TableRow>
-                          ))}
-                        </TableBody>
-                      </Table>
-                    </CardContent>
-                  </Card>
-                )}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg">Gesundheitsinformationen</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p>Gesundheitsdaten für {dog.name} werden hier angezeigt, sobald sie hinzugefügt wurden.</p>
+                    
+                    {dog.healthStatus && (
+                      <div className="mt-4">
+                        <h3 className="font-medium mb-2">Gesundheitsstatus</h3>
+                        <p>{dog.healthStatus}</p>
+                      </div>
+                    )}
+                    
+                    {dog.geneticTestResults && (
+                      <div className="mt-4">
+                        <h3 className="font-medium mb-2">Genetische Testergebnisse</h3>
+                        <p>{dog.geneticTestResults}</p>
+                      </div>
+                    )}
+                    
+                    {dog.vaccinationHistory && (
+                      <div className="mt-4">
+                        <h3 className="font-medium mb-2">Impfhistorie</h3>
+                        <p>{dog.vaccinationHistory}</p>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
               </TabsContent>
               
               <TabsContent value="breeding" className="space-y-4 py-4">
@@ -539,13 +431,13 @@ const DogDetail = () => {
                                 </div>
                               </TableCell>
                               <TableCell>
-                                {doc.type === 'pedigree' && 'Stammbaum'}
-                                {doc.type === 'breeding' && 'Zuchtverband'}
-                                {doc.type === 'exhibition' && 'Ausstellung'}
-                                {doc.type === 'health' && 'Gesundheit'}
-                                {doc.type === 'genetic' && 'Genetik'}
-                                {doc.type === 'vaccination' && 'Impfung'}
-                                {doc.type === 'litter' && 'Wurfabnahme'}
+                                {doc.category === 'pedigree' && 'Stammbaum'}
+                                {doc.category === 'breeding' && 'Zuchtverband'}
+                                {doc.category === 'exhibition' && 'Ausstellung'}
+                                {doc.category === 'health' && 'Gesundheit'}
+                                {doc.category === 'genetic' && 'Genetik'}
+                                {doc.category === 'vaccination' && 'Impfung'}
+                                {doc.category === 'litter' && 'Wurfabnahme'}
                               </TableCell>
                               <TableCell>{doc.date}</TableCell>
                               <TableCell>
@@ -671,62 +563,21 @@ const DogDetail = () => {
               </TabsContent>
               
               <TabsContent value="media" className="space-y-4 py-4">
-                {dog?.media && dog?.media.length > 0 && (
-                  <>
-                    <h3 className="text-lg font-medium mb-4">Fotos & Videos</h3>
-                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                      {dog?.media.map((item, index) => (
-                        <div key={index} className="border rounded-lg overflow-hidden bg-white">
-                          <div className="h-40 bg-gray-100 flex items-center justify-center">
-                            {item.fileType === 'jpg' || item.fileType === 'png' ? (
-                              <Image className="h-12 w-12 text-gray-400" />
-                            ) : (
-                              <Video className="h-12 w-12 text-gray-400" />
-                            )}
-                          </div>
-                          <div className="p-3">
-                            <div className="text-sm font-medium">{item.name}</div>
-                            <div className="text-xs text-gray-500 flex justify-between mt-1">
-                              <span>{item.date}</span>
-                              <span className="capitalize">{item.type === 'photos' ? 'Foto' : 'Video'}</span>
-                            </div>
-                            <div className="flex justify-end mt-2">
-                              <AlertDialog>
-                                <AlertDialogTrigger asChild>
-                                  <Button variant="ghost" size="sm" className="text-red-500 h-8 px-2 py-1">
-                                    <X className="h-4 w-4 mr-1" /> Löschen
-                                  </Button>
-                                </AlertDialogTrigger>
-                                <AlertDialogContent>
-                                  <AlertDialogHeader>
-                                    <AlertDialogTitle>Medium löschen</AlertDialogTitle>
-                                    <AlertDialogDescription>
-                                      Möchten Sie wirklich "{item.name}" löschen? Diese Aktion kann nicht rückgängig gemacht werden.
-                                    </AlertDialogDescription>
-                                  </AlertDialogHeader>
-                                  <AlertDialogFooter>
-                                    <AlertDialogCancel>Abbrechen</AlertDialogCancel>
-                                    <AlertDialogAction 
-                                      className="bg-red-500 hover:bg-red-600"
-                                      onClick={() => {
-                                        toast({
-                                          title: "Medium gelöscht",
-                                          description: `${item.name} wurde erfolgreich gelöscht.`,
-                                        });
-                                      }}
-                                    >
-                                      Löschen
-                                    </AlertDialogAction>
-                                  </AlertDialogFooter>
-                                </AlertDialogContent>
-                              </AlertDialog>
-                            </div>
-                          </div>
-                        </div>
-                      ))}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg">Fotos & Videos</CardTitle>
+                    <p className="text-gray-500 text-sm">Noch keine Medien vorhanden</p>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-center py-8">
+                      <Image className="h-12 w-12 mx-auto text-gray-300 mb-4" />
+                      <p className="text-gray-500">Fügen Sie Fotos oder Videos von {dog.name} hinzu</p>
+                      <Button className="mt-4 bg-zucht-blue hover:bg-zucht-blue/90">
+                        <Upload className="h-4 w-4 mr-2" /> Medien hochladen
+                      </Button>
                     </div>
-                  </>
-                )}
+                  </CardContent>
+                </Card>
                 
                 <div className="flex justify-end mt-4">
                   <Dialog open={isUploadDialogOpen} onOpenChange={setIsUploadDialogOpen}>
