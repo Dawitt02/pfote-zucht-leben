@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -7,7 +7,7 @@ import { z } from "zod";
 import { Dog, Calendar, Award, Camera, Plus, ArrowLeft, FileText, Activity, Save } from 'lucide-react';
 import { toast } from "sonner";
 
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from "@/components/ui/form";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription, FormFileInput } from "@/components/ui/form";
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -19,6 +19,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import Navbar from '@/components/Navbar';
 
 // Define form validation schema
@@ -69,6 +70,8 @@ type DogFormValues = z.infer<typeof dogFormSchema>;
 
 const AddDog = () => {
   const navigate = useNavigate();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
   
   // Default values for the form
   const defaultValues: Partial<DogFormValues> = {
@@ -79,7 +82,7 @@ const AddDog = () => {
     breedingStatus: "",
     achievements: "",
     notes: "",
-    imageUrl: "https://images.unsplash.com/photo-1591769225440-811ad7d6eab2?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80", // Placeholder image
+    imageUrl: "", // We'll let the user upload an image
     hasStandardPhotos: false,
   };
   
@@ -88,7 +91,22 @@ const AddDog = () => {
     defaultValues,
   });
 
+  const handleImageChange = (dataUrl: string) => {
+    setImagePreview(dataUrl);
+    form.setValue('imageUrl', dataUrl);
+  };
+
+  const triggerFileInput = () => {
+    fileInputRef.current?.click();
+  };
+
   function onSubmit(data: DogFormValues) {
+    // Validate if image has been uploaded
+    if (!data.imageUrl) {
+      toast.error("Bitte lade ein Bild des Hundes hoch.");
+      return;
+    }
+
     // Here you would typically save the data to your database
     console.log("Form submitted:", data);
     
@@ -117,26 +135,51 @@ const AddDog = () => {
 
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-              {/* Image upload placeholder */}
-              <div className="flex justify-center mb-6">
-                <div className="relative w-32 h-32 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden border-2 border-zucht-amber">
-                  {form.watch("imageUrl") ? (
-                    <img 
-                      src={form.watch("imageUrl")} 
-                      alt="Hundebild" 
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <Camera className="h-8 w-8 text-gray-400" />
+              {/* Image upload section */}
+              <div className="flex flex-col items-center mb-6">
+                <FormField
+                  control={form.control}
+                  name="imageUrl"
+                  render={({ field }) => (
+                    <FormItem className="w-full flex flex-col items-center">
+                      <FormLabel className="text-center mb-2">Hundebild</FormLabel>
+                      <div className="relative w-32 h-32 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden border-2 border-zucht-amber mb-2">
+                        {imagePreview ? (
+                          <Avatar className="w-32 h-32">
+                            <AvatarImage src={imagePreview} alt="Hundebild" className="object-cover" />
+                            <AvatarFallback>
+                              <Camera className="h-8 w-8 text-gray-400" />
+                            </AvatarFallback>
+                          </Avatar>
+                        ) : (
+                          <Camera className="h-8 w-8 text-gray-400" />
+                        )}
+                        <Button 
+                          type="button" 
+                          size="icon" 
+                          className="absolute bottom-0 right-0 rounded-full bg-zucht-amber h-8 w-8 p-1"
+                          onClick={triggerFileInput}
+                        >
+                          <Plus className="h-4 w-4" />
+                        </Button>
+                      </div>
+                      <FormControl>
+                        <FormFileInput
+                          ref={fileInputRef}
+                          accept="image/*"
+                          onImageChange={handleImageChange}
+                          previewUrl={imagePreview || undefined}
+                          {...field}
+                          value={undefined} // Override the value from react-hook-form
+                        />
+                      </FormControl>
+                      <FormDescription className="text-center">
+                        Bitte lade ein Bild des Hundes hoch
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
                   )}
-                  <Button 
-                    type="button" 
-                    size="icon" 
-                    className="absolute bottom-0 right-0 rounded-full bg-zucht-amber h-8 w-8 p-1"
-                  >
-                    <Plus className="h-4 w-4" />
-                  </Button>
-                </div>
+                />
               </div>
               
               {/* Accordion for categorized form fields */}

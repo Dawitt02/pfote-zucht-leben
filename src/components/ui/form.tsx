@@ -1,3 +1,4 @@
+
 import * as React from "react"
 import * as LabelPrimitive from "@radix-ui/react-label"
 import { Slot } from "@radix-ui/react-slot"
@@ -164,6 +165,51 @@ const FormMessage = React.forwardRef<
 })
 FormMessage.displayName = "FormMessage"
 
+// New component for file inputs
+const FormFileInput = React.forwardRef<
+  HTMLInputElement,
+  React.InputHTMLAttributes<HTMLInputElement> & {
+    onImageChange?: (dataUrl: string) => void;
+    previewUrl?: string;
+  }
+>(({ className, onImageChange, previewUrl, ...props }, ref) => {
+  const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file && onImageChange) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const result = e.target?.result;
+        if (typeof result === 'string') {
+          onImageChange(result);
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  return (
+    <div className={cn("relative", className)}>
+      {previewUrl && (
+        <div className="relative mb-2 overflow-hidden rounded-md">
+          <img 
+            src={previewUrl} 
+            alt="Preview" 
+            className="w-full h-auto object-cover" 
+          />
+        </div>
+      )}
+      <input
+        type="file"
+        ref={ref}
+        onChange={handleChange}
+        className="hidden"
+        {...props}
+      />
+    </div>
+  );
+});
+FormFileInput.displayName = "FormFileInput";
+
 export {
   useFormField,
   Form,
@@ -173,4 +219,5 @@ export {
   FormDescription,
   FormMessage,
   FormField,
+  FormFileInput,
 }
