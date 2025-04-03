@@ -102,7 +102,35 @@ const DogFormWithDocuments: React.FC<DogFormWithDocumentsProps> = ({ initialData
     };
 
     if (mode === 'add') {
-      addDog(dogData);
+      // Ensure required fields are present
+      const newDog: Omit<Dog, 'id'> = {
+        name: dogData.name,
+        breed: dogData.breed,
+        age: dogData.age,
+        gender: dogData.gender,
+        imageUrl: dogData.imageUrl,
+        breedingStatus: dogData.breedingStatus || '',
+        fullName: dogData.fullName,
+        registrationNumber: dogData.registrationNumber,
+        chipNumber: dogData.chipNumber,
+        notes: dogData.notes,
+        pedigree: dogData.pedigree,
+        geneticTestResults: dogData.geneticTestResults,
+        inbreedingCoefficient: dogData.inbreedingCoefficient,
+        healthStatus: dogData.healthStatus,
+        vaccinationHistory: dogData.vaccinationHistory,
+        weight: dogData.weight,
+        size: dogData.size,
+        cycleInformation: dogData.cycleInformation,
+        breedingHistory: dogData.breedingHistory,
+        litterInformation: dogData.litterInformation,
+        breedingRestrictions: dogData.breedingRestrictions,
+        exhibitionResults: dogData.exhibitionResults,
+        temperamentAssessment: dogData.temperamentAssessment,
+        achievements: [],
+      };
+      
+      addDog(newDog);
       toast({
         title: "Hund hinzugefügt",
         description: `${values.name} wurde erfolgreich hinzugefügt.`,
