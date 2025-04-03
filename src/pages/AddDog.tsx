@@ -1,3 +1,4 @@
+
 import React, { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -102,7 +103,7 @@ const AddDog = () => {
   }
 
   return (
-    <div className="flex flex-col h-full bg-zucht-cream">
+    <div className="flex flex-col min-h-screen bg-zucht-cream">
       <main className="flex-1 overflow-auto pb-28">
         <div className="app-container">
           <div className="flex items-center mb-6">
@@ -708,7 +709,8 @@ const AddDog = () => {
         </div>
       </main>
       
-      <div className="fixed bottom-20 left-0 right-0 bg-zucht-cream border-t border-gray-200 py-4 px-4 z-10">
+      {/* Position the buttons at the absolute bottom, flush with navbar */}
+      <div className="fixed bottom-0 left-0 right-0 bg-zucht-cream border-t border-gray-200 py-4 px-4 z-50">
         <div className="flex gap-4 max-w-md mx-auto">
           <Button 
             type="submit" 
