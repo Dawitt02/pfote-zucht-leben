@@ -43,7 +43,8 @@ export function DogCard({
           <img 
             src={imageUrl || "/placeholder.svg"} 
             alt={`${name}, a ${breed} dog`}
-            className="w-full h-full object-cover" 
+            className="w-full h-full object-cover"
+            key={`dog-image-${id}-${imageUrl}`} // Add key to force re-render when imageUrl changes
           />
           <div className={cn(
             "absolute top-2 right-2 rounded-full w-8 h-8 flex items-center justify-center",
@@ -74,7 +75,7 @@ export function DogCard({
           {achievements.length > 0 && (
             <div className="mt-3 flex flex-wrap gap-1">
               {achievements.map((achievement, index) => (
-                <div key={index} className="flex items-center text-xs bg-zucht-green/10 text-zucht-green px-2 py-1 rounded-full">
+                <div key={`${id}-achievement-${index}`} className="flex items-center text-xs bg-zucht-green/10 text-zucht-green px-2 py-1 rounded-full">
                   <Award className="h-3 w-3 mr-1" />
                   <span>{achievement}</span>
                 </div>

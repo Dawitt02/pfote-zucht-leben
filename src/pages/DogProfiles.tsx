@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Plus, Upload, FileText, Image, Video, File } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
@@ -26,12 +26,18 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Label } from '@/components/ui/label';
 
 const DogProfiles = () => {
-  const { dogs } = useDogs();
+  const { dogs, addDocumentToDog } = useDogs();
   const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
   const [selectedDog, setSelectedDog] = useState<string | null>(null);
   const [documentCategory, setDocumentCategory] = useState("pedigree");
   const [selectedFiles, setSelectedFiles] = useState<FileList | null>(null);
   const [uploadTab, setUploadTab] = useState("documents");
+  const [localDogs, setLocalDogs] = useState(dogs);
+
+  // Update local dogs whenever dogs from context changes
+  useEffect(() => {
+    setLocalDogs(dogs);
+  }, [dogs]);
 
   const handleUploadClick = (dogId: string) => {
     setSelectedDog(dogId);
@@ -52,6 +58,21 @@ const DogProfiles = () => {
 
     const fileNames = Array.from(selectedFiles).map(file => file.name).join(', ');
     
+    // Create a document and add it to the dog
+    if (selectedDog) {
+      Array.from(selectedFiles).forEach((file, index) => {
+        const document: Omit<DogDocument, 'id'> = {
+          name: file.name,
+          category: documentCategory,
+          fileUrl: URL.createObjectURL(file), // Create a temporary URL for the file
+          date: new Date().toISOString(),
+          fileType: file.type
+        };
+        
+        addDocumentToDog(selectedDog, document);
+      });
+    }
+    
     const dogName = dogs.find(dog => dog.id === selectedDog)?.name || "Hund";
     const categoryLabels: Record<string, string> = {
       pedigree: "Stammbaum-Dokumente",
@@ -71,7 +92,7 @@ const DogProfiles = () => {
   };
 
   const getDogNameById = (id: string): string => {
-    return dogs.find(dog => dog.id === id)?.name || "Unbekannter Hund";
+    return localDogs.find(dog => dog.id === id)?.name || "Unbekannter Hund";
   };
 
   return (

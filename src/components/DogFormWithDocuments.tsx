@@ -1,5 +1,4 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
@@ -36,7 +35,6 @@ import {
   TabsTrigger,
 } from "@/components/ui/tabs";
 
-// Schema für die Formularvalidierung
 const dogFormSchema = z.object({
   name: z.string().min(2, { message: 'Name muss mindestens 2 Zeichen lang sein' }),
   breed: z.string().min(2, { message: 'Rasse muss mindestens 2 Zeichen lang sein' }),
@@ -44,7 +42,6 @@ const dogFormSchema = z.object({
   gender: z.enum(['male', 'female']),
   breedingStatus: z.string().optional(),
   
-  // Additional properties for EditDog
   fullName: z.string().optional(),
   registrationNumber: z.string().optional(),
   chipNumber: z.string().optional(),
@@ -81,7 +78,6 @@ const DogFormWithDocuments: React.FC<DogFormWithDocumentsProps> = ({ initialData
   const [documents, setDocuments] = useState<Record<string, Omit<DogDocument, 'id'>>>({});
   const [imagePreview, setImagePreview] = useState<string | undefined>(initialData?.imageUrl);
 
-  // Formular-Standardwerte
   const defaultValues: Partial<DogFormValues> = initialData || {
     name: '',
     breed: '',
@@ -95,6 +91,13 @@ const DogFormWithDocuments: React.FC<DogFormWithDocumentsProps> = ({ initialData
     defaultValues,
   });
 
+  useEffect(() => {
+    if (initialData) {
+      form.reset(initialData);
+      setImagePreview(initialData.imageUrl);
+    }
+  }, [initialData, form]);
+
   const onSubmit = (values: DogFormValues) => {
     const dogData = {
       ...values,
@@ -102,7 +105,6 @@ const DogFormWithDocuments: React.FC<DogFormWithDocumentsProps> = ({ initialData
     };
 
     if (mode === 'add') {
-      // Ensure required fields are present
       const newDog: Omit<Dog, 'id'> = {
         name: dogData.name,
         breed: dogData.breed,
@@ -136,21 +138,32 @@ const DogFormWithDocuments: React.FC<DogFormWithDocumentsProps> = ({ initialData
         description: `${values.name} wurde erfolgreich hinzugefügt.`,
       });
     } else if (mode === 'edit' && initialData) {
-      updateDog({ ...initialData, ...dogData });
+      const achievements = values.achievements 
+        ? [values.achievements] 
+        : initialData.achievements || [];
+      
+      updateDog({ 
+        ...initialData, 
+        ...dogData,
+        achievements,
+        documents: initialData.documents || []
+      });
+      
       toast({
         title: "Hund aktualisiert",
         description: `${values.name} wurde erfolgreich aktualisiert.`,
       });
     }
 
-    // Dokumente hochladen, falls vorhanden
     if (Object.keys(documents).length > 0 && initialData?.id) {
       Object.values(documents).forEach(doc => {
         addDocumentToDog(initialData.id, doc);
       });
     }
 
-    navigate('/dogs');
+    setTimeout(() => {
+      navigate('/dogs');
+    }, 300);
   };
 
   const handleImageChange = (dataUrl: string) => {
