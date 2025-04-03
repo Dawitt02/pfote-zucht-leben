@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
@@ -61,7 +60,18 @@ const PuppyForm = ({ onSubmit, defaultValues }: PuppyFormProps) => {
   });
 
   const handleSubmit = form.handleSubmit((data) => {
-    onSubmit(data);
+    const puppyData: Omit<Puppy, 'id' | 'litterId'> = {
+      gender: data.gender,
+      name: data.name,
+      color: data.color,
+      birthWeight: data.birthWeight,
+      chip: data.chip,
+      sold: data.sold,
+      newOwner: data.newOwner,
+      notes: data.notes
+    };
+    
+    onSubmit(puppyData);
   });
 
   return (

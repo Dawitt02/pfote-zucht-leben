@@ -26,9 +26,9 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <DogProvider>
         <Router>
-          <Routes>
-            <Route path="/" element={<AppWrapper />}>
-              <Route index element={<Index />} />
+          <AppWrapper>
+            <Routes>
+              <Route path="/" element={<Index />} />
               <Route path="dashboard" element={<Dashboard />} />
               <Route path="dogs" element={<DogProfiles />} />
               <Route path="dogs/:dogId" element={<DogDetail />} />
@@ -39,8 +39,8 @@ function App() {
               <Route path="breeding/litter/:litterId" element={<LitterDetail />} />
               <Route path="community" element={<Community />} />
               <Route path="*" element={<NotFound />} />
-            </Route>
-          </Routes>
+            </Routes>
+          </AppWrapper>
         </Router>
       </DogProvider>
     </QueryClientProvider>
