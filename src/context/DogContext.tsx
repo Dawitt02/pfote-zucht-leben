@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, ReactNode } from 'react';
-import { addDays, differenceInDays } from 'date-fns';
+import { addDays, differenceInDays, addMonths } from 'date-fns';
 
 // Document type definition
 export interface DogDocument {
@@ -111,7 +111,7 @@ interface DogContextType {
   updateDog: (dog: Dog) => void;
   addDocumentToDog: (dogId: string, document: Omit<DogDocument, 'id'>) => void;
   removeDocumentFromDog: (dogId: string, documentId: string) => void;
-  addHeatCycle: (heatCycle: Omit<HeatCycle, 'id'>) => HeatCycle;
+  addHeatCycle: (heatCycle: Omit<HeatCycle, 'id'> & { replacePrevious?: boolean }) => HeatCycle;
   updateHeatCycle: (heatCycle: HeatCycle) => void;
   removeHeatCycle: (heatCycleId: string) => void;
   addBreedingEvent: (event: Omit<BreedingEvent, 'id'>) => BreedingEvent;
@@ -124,6 +124,8 @@ interface DogContextType {
   updatePuppy: (puppy: Puppy) => void;
   removePuppy: (puppyId: string) => void;
   recordBirth: (litterId: string, birthDate: Date, puppyCount?: number, males?: number, females?: number, notes?: string) => void;
+  getLastHeatCycle: (dogId: string) => HeatCycle | null;
+  getPredictedNextHeat: (dogId: string) => Date | null;
 }
 
 const DogContext = createContext<DogContextType | undefined>(undefined);
@@ -295,10 +297,24 @@ export const DogProvider = ({ children }: { children: ReactNode }) => {
   };
 
   // Heat cycle management
-  const addHeatCycle = (heatCycle: Omit<HeatCycle, 'id'>) => {
+  const addHeatCycle = (heatCycle: Omit<HeatCycle, 'id'> & { replacePrevious?: boolean }) => {
     const id = `hc-${Date.now()}`;
     const newHeatCycle = { id, ...heatCycle };
-    setHeatCycles(prev => [...prev, newHeatCycle]);
+    
+    // Filter out replacePrevious from the actual heat cycle object
+    const { replacePrevious, ...heatCycleData } = newHeatCycle;
+    const cleanHeatCycle = heatCycleData as HeatCycle;
+    
+    if (replacePrevious) {
+      // Replace the previous heat cycle for this dog
+      setHeatCycles(prev => {
+        // Keep all cycles that are not for this dog or are the new one
+        const otherDogsCycles = prev.filter(cycle => cycle.dogId !== heatCycle.dogId);
+        return [...otherDogsCycles, cleanHeatCycle];
+      });
+    } else {
+      setHeatCycles(prev => [...prev, cleanHeatCycle]);
+    }
     
     // Add corresponding breeding event
     addBreedingEvent({
@@ -322,7 +338,7 @@ export const DogProvider = ({ children }: { children: ReactNode }) => {
       });
     }
     
-    return newHeatCycle;
+    return cleanHeatCycle;
   };
 
   const updateHeatCycle = (heatCycle: HeatCycle) => {
@@ -644,6 +660,64 @@ export const DogProvider = ({ children }: { children: ReactNode }) => {
     });
   };
 
+  // New helper functions for heat cycles
+  const getLastHeatCycle = (dogId: string): HeatCycle | null => {
+    const dogHeatCycles = heatCycles
+      .filter(cycle => cycle.dogId === dogId)
+      .map(cycle => ({
+        ...cycle,
+        startDate: cycle.startDate instanceof Date ? cycle.startDate : new Date(cycle.startDate)
+      }))
+      .sort((a, b) => b.startDate.getTime() - a.startDate.getTime());
+    
+    return dogHeatCycles.length > 0 ? dogHeatCycles[0] : null;
+  };
+  
+  const getPredictedNextHeat = (dogId: string): Date | null => {
+    const lastHeat = getLastHeatCycle(dogId);
+    if (!lastHeat) return null;
+    
+    const lastHeatDate = lastHeat.startDate instanceof Date ? 
+      lastHeat.startDate : 
+      new Date(lastHeat.startDate);
+    
+    // Get all previous heat cycles for this dog to calculate average cycle length
+    const dogHeatCycles = heatCycles
+      .filter(cycle => cycle.dogId === dogId)
+      .map(cycle => ({
+        ...cycle,
+        startDate: cycle.startDate instanceof Date ? cycle.startDate : new Date(cycle.startDate)
+      }))
+      .sort((a, b) => a.startDate.getTime() - b.startDate.getTime()); // Oldest first
+    
+    // Calculate average cycle length if we have more than one heat cycle
+    let averageCycleLength = 180; // Default to 6 months
+    if (dogHeatCycles.length > 1) {
+      let totalDays = 0;
+      let validCycles = 0;
+      
+      for (let i = 0; i < dogHeatCycles.length - 1; i++) {
+        const currentDate = dogHeatCycles[i].startDate;
+        const nextDate = dogHeatCycles[i+1].startDate;
+        
+        const daysDiff = Math.abs(differenceInDays(currentDate, nextDate));
+        
+        // Only count normal cycles (between 120-240 days) to avoid skewing the average
+        if (daysDiff >= 120 && daysDiff <= 240) {
+          totalDays += daysDiff;
+          validCycles++;
+        }
+      }
+      
+      if (validCycles > 0) {
+        averageCycleLength = Math.round(totalDays / validCycles);
+      }
+    }
+    
+    // Calculate next predicted heat based on average cycle length
+    return addDays(lastHeatDate, averageCycleLength);
+  };
+
   return (
     <DogContext.Provider value={{ 
       dogs, 
@@ -666,7 +740,9 @@ export const DogProvider = ({ children }: { children: ReactNode }) => {
       addPuppy,
       updatePuppy,
       removePuppy,
-      recordBirth
+      recordBirth,
+      getLastHeatCycle,
+      getPredictedNextHeat
     }}>
       {children}
     </DogContext.Provider>

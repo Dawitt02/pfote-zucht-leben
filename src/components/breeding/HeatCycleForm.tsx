@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { addMonths, isBefore, format } from 'date-fns';
 import { de } from 'date-fns/locale';
@@ -75,11 +74,9 @@ const HeatCycleForm = ({
     }
   });
 
-  // Watch for dog selection and date changes to validate
   const selectedDogId = form.watch('dogId');
   const selectedDate = form.watch('startDate');
 
-  // Check for previous heat cycles when dog or date changes
   useEffect(() => {
     if (!selectedDogId) {
       setValidationWarning(null);
@@ -87,7 +84,6 @@ const HeatCycleForm = ({
       return;
     }
 
-    // Get this dog's heat cycles, sorted by date (newest first)
     const dogHeatCycles = heatCycles
       .filter(cycle => cycle.dogId === selectedDogId)
       .map(cycle => ({
@@ -96,7 +92,6 @@ const HeatCycleForm = ({
       }))
       .sort((a, b) => b.startDate.getTime() - a.startDate.getTime());
 
-    // Skip the current cycle being edited in edit mode
     const relevantCycles = mode === 'edit' && defaultValues?.id
       ? dogHeatCycles.filter(cycle => cycle.id !== defaultValues.id)
       : dogHeatCycles;
@@ -106,13 +101,11 @@ const HeatCycleForm = ({
       const lastHeatDate = lastHeat.startDate;
       const minimumNextDate = addMonths(lastHeatDate, 6);
       
-      // Store previous heat info for potential replacement message
       setPreviousHeatInfo({
         date: lastHeatDate,
         id: lastHeat.id
       });
 
-      // Check if selected date is too soon
       if (selectedDate && isBefore(selectedDate, minimumNextDate)) {
         setValidationWarning(
           `Die letzte Läufigkeit war am ${format(lastHeatDate, 'dd.MM.yyyy', { locale: de })}. 
@@ -138,7 +131,6 @@ const HeatCycleForm = ({
         return;
       }
       
-      // If there's a warning and it's not edit mode, prevent submission
       if (validationWarning && mode === 'add') {
         toast.error('Die Läufigkeit kann nicht gespeichert werden', {
           description: validationWarning
@@ -160,24 +152,21 @@ const HeatCycleForm = ({
         };
       }
       
-      // Get all previous heat cycles for this dog
       const dogPreviousHeatCycles = heatCycles
         .filter(cycle => cycle.dogId === dogId)
         .sort((a, b) => {
           const dateA = a.startDate instanceof Date ? a.startDate : new Date(a.startDate);
           const dateB = b.startDate instanceof Date ? b.startDate : new Date(b.startDate);
-          return dateB.getTime() - dateA.getTime(); // Newest first
+          return dateB.getTime() - dateA.getTime();
         });
         
-      // If adding new and there are previous cycles for this dog, remove the previous one
       if (mode === 'add' && previousHeatInfo && dogPreviousHeatCycles.length > 0) {
-        // The replacement logic is handled in the context
         addHeatCycle({
           dogId,
           startDate,
           fertile: fertileData,
           notes,
-          replacePrevious: true // Signal to context to replace previous
+          replacePrevious: true
         });
         
         toast.success(
@@ -187,7 +176,6 @@ const HeatCycleForm = ({
           }
         );
       } else if (mode === 'edit' && defaultValues?.id) {
-        // Normal update for edit mode
         updateHeatCycle({
           id: defaultValues.id,
           dogId,
@@ -197,7 +185,6 @@ const HeatCycleForm = ({
         });
         toast.success(`Läufigkeit für ${dogName} erfolgreich aktualisiert`);
       } else {
-        // Normal add for first heat cycle
         addHeatCycle({
           dogId,
           startDate,
@@ -227,7 +214,6 @@ const HeatCycleForm = ({
     }
   });
 
-  // Helper function to add days to a date
   const addDays = (date: Date, days: number): Date => {
     const result = new Date(date);
     result.setDate(date.getDate() + days);
@@ -321,7 +307,7 @@ const HeatCycleForm = ({
         )}
 
         {previousHeatInfo && !validationWarning && mode === 'add' && (
-          <Alert variant="warning">
+          <Alert>
             <AlertTitle>Hinweis</AlertTitle>
             <AlertDescription>
               Eine neue Läufigkeit wird die vorherige vom {format(previousHeatInfo.date, 'dd.MM.yyyy', { locale: de })} ersetzen.
