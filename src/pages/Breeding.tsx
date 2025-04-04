@@ -17,7 +17,6 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from '@/components/ui/dialog';
 import {
   Card,
@@ -285,7 +284,9 @@ const Breeding = () => {
                                   {dogName} • {format(event.date, 'dd.MM.yyyy', { locale: de })}
                                 </div>
                               </div>
-                              <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                              <Link to={`/breeding/dog/${event.dogId}`}>
+                                <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                              </Link>
                             </div>
                           );
                         })}
@@ -326,7 +327,9 @@ const Breeding = () => {
                                 </div>
                               )}
                             </div>
-                            <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                            <Link to={`/breeding/dog/${dog.id}`}>
+                              <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                            </Link>
                           </div>
                         ))}
                       </div>
@@ -348,56 +351,67 @@ const Breeding = () => {
               <CardContent className="px-3 pb-3">
                 <div className="grid grid-cols-1 gap-3">
                   {femaleDogsOnly.map(dog => (
-                    <Card key={dog.id} className="overflow-hidden">
-                      <div className="flex border-l-4 border-zucht-blue p-3">
-                        <div className="mr-3 flex-shrink-0">
-                          <div className="w-10 h-10 rounded-full bg-gray-200 overflow-hidden">
-                            {dog.imageUrl ? (
-                              <img 
-                                src={dog.imageUrl} 
-                                alt={dog.name} 
-                                className="w-full h-full object-cover"
-                              />
-                            ) : (
-                              <div className="w-full h-full flex items-center justify-center bg-zucht-blue text-white text-lg">
-                                {dog.name.charAt(0)}
-                              </div>
-                            )}
+                    <Link to={`/breeding/dog/${dog.id}`} key={dog.id}>
+                      <Card className="overflow-hidden hover:bg-slate-50 transition-colors">
+                        <div className="flex border-l-4 border-zucht-blue p-3">
+                          <div className="mr-3 flex-shrink-0">
+                            <div className="w-10 h-10 rounded-full bg-gray-200 overflow-hidden">
+                              {dog.imageUrl ? (
+                                <img 
+                                  src={dog.imageUrl} 
+                                  alt={dog.name} 
+                                  className="w-full h-full object-cover"
+                                />
+                              ) : (
+                                <div className="w-full h-full flex items-center justify-center bg-zucht-blue text-white text-lg">
+                                  {dog.name.charAt(0)}
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                          <div className="flex-1">
+                            <h3 className="font-semibold text-sm">{dog.name}</h3>
+                            <p className="text-xs text-muted-foreground">{dog.breed}</p>
+                            <div className="flex items-center mt-0.5">
+                              <Award className="h-3 w-3 text-zucht-amber mr-1" />
+                              <span className="text-xs">{dog.breedingStatus || 'Kein Zuchtstatus'}</span>
+                            </div>
+                            <div className="flex gap-2 mt-2">
+                              <Button 
+                                variant="outline" 
+                                size="sm" 
+                                className="h-7 text-xs" 
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  e.stopPropagation();
+                                  setSelectedDogId(dog.id);
+                                  setIsAddHeatDialogOpen(true);
+                                }}
+                              >
+                                <PlusCircle className="h-3 w-3 mr-1" />
+                                Läufigkeit
+                              </Button>
+                              <Button 
+                                variant="outline" 
+                                size="sm" 
+                                className="h-7 text-xs text-zucht-amber border-zucht-amber hover:bg-zucht-amber/10" 
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  e.stopPropagation();
+                                  handleDogBreeding(dog.id);
+                                }}
+                              >
+                                <Heart className="h-3 w-3 mr-1" />
+                                Deckakt
+                              </Button>
+                            </div>
+                          </div>
+                          <div className="flex items-center">
+                            <ChevronRight className="h-5 w-5 text-muted-foreground" />
                           </div>
                         </div>
-                        <div className="flex-1">
-                          <h3 className="font-semibold text-sm">{dog.name}</h3>
-                          <p className="text-xs text-muted-foreground">{dog.breed}</p>
-                          <div className="flex items-center mt-0.5">
-                            <Award className="h-3 w-3 text-zucht-amber mr-1" />
-                            <span className="text-xs">{dog.breedingStatus || 'Kein Zuchtstatus'}</span>
-                          </div>
-                          <div className="flex gap-2 mt-2">
-                            <Button 
-                              variant="outline" 
-                              size="sm" 
-                              className="h-7 text-xs" 
-                              onClick={() => {
-                                setSelectedDogId(dog.id);
-                                setIsAddHeatDialogOpen(true);
-                              }}
-                            >
-                              <PlusCircle className="h-3 w-3 mr-1" />
-                              Läufigkeit
-                            </Button>
-                            <Button 
-                              variant="outline" 
-                              size="sm" 
-                              className="h-7 text-xs text-zucht-amber border-zucht-amber hover:bg-zucht-amber/10" 
-                              onClick={() => handleDogBreeding(dog.id)}
-                            >
-                              <Heart className="h-3 w-3 mr-1" />
-                              Deckakt
-                            </Button>
-                          </div>
-                        </div>
-                      </div>
-                    </Card>
+                      </Card>
+                    </Link>
                   ))}
                 </div>
               </CardContent>
@@ -446,7 +460,9 @@ const Breeding = () => {
                               <div key={litter.id} className="bg-white p-3 rounded-lg border shadow-sm">
                                 <div className="flex justify-between items-start">
                                   <div>
-                                    <h4 className="font-medium text-sm">{dogName}</h4>
+                                    <Link to={`/breeding/dog/${litter.dogId}`} className="hover:underline">
+                                      <h4 className="font-medium text-sm">{dogName}</h4>
+                                    </Link>
                                     <p className="text-xs text-muted-foreground">
                                       Deckdatum: {format(new Date(litter.breedingDate), 'dd.MM.yyyy', { locale: de })}
                                     </p>
@@ -487,7 +503,9 @@ const Breeding = () => {
                             <div key={litter.id} className="bg-white p-3 rounded-lg border shadow-sm">
                               <div className="flex justify-between items-start">
                                 <div>
-                                  <h4 className="font-medium text-sm">{dogName}</h4>
+                                  <Link to={`/breeding/dog/${litter.dogId}`} className="hover:underline">
+                                    <h4 className="font-medium text-sm">{dogName}</h4>
+                                  </Link>
                                   <p className="text-xs">
                                     <span className="text-zucht-blue font-medium">
                                       {litter.puppyCount || 0} Welpen

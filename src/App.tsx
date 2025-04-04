@@ -12,6 +12,7 @@ import AddDog from './pages/AddDog';
 import EditDog from './pages/EditDog';
 import Health from './pages/Health';
 import Breeding from './pages/Breeding';
+import BreedingDogProfile from './pages/BreedingDogProfile';
 import LitterDetail from './pages/LitterDetail';
 import Community from './pages/Community';
 import NotFound from './pages/NotFound';
@@ -36,6 +37,7 @@ function App() {
               <Route path="dogs/:dogId/edit" element={<EditDog />} />
               <Route path="health" element={<Health />} />
               <Route path="breeding" element={<Breeding />} />
+              <Route path="breeding/dog/:dogId" element={<BreedingDogProfile />} />
               <Route path="breeding/litter/:litterId" element={<LitterDetail />} />
               <Route path="community" element={<Community />} />
               <Route path="*" element={<NotFound />} />
