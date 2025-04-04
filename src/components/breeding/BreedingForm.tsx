@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { format } from 'date-fns';
 import { CalendarIcon } from 'lucide-react';
 import { useForm } from 'react-hook-form';
@@ -49,6 +49,7 @@ interface FormValues {
 const BreedingForm = ({ onSubmit: onSubmitProp, preselectedDogId }: BreedingFormProps) => {
   const { dogs, addBreedingEvent, addLitter } = useDogs();
   const femaleDogsOnly = dogs.filter(dog => dog.gender === 'female');
+  const [formSubmitting, setFormSubmitting] = useState(false);
   
   const form = useForm<FormValues>({
     defaultValues: {
@@ -62,7 +63,21 @@ const BreedingForm = ({ onSubmit: onSubmitProp, preselectedDogId }: BreedingForm
 
   const handleSubmit = form.handleSubmit((data) => {
     try {
+      setFormSubmitting(true);
       const { dogId, breedingDate, studName, studOwner, notes } = data;
+      
+      if (!dogId) {
+        toast.error('Bitte wähle eine Hündin aus');
+        setFormSubmitting(false);
+        return;
+      }
+      
+      if (!studName) {
+        toast.error('Bitte gib den Namen des Rüden ein');
+        setFormSubmitting(false);
+        return;
+      }
+      
       const dogName = dogs.find(d => d.id === dogId)?.name || 'Hund';
       
       // 1. Create a breeding event
@@ -103,6 +118,8 @@ const BreedingForm = ({ onSubmit: onSubmitProp, preselectedDogId }: BreedingForm
     } catch (error) {
       toast.error('Fehler beim Speichern der Deckdaten');
       console.error(error);
+    } finally {
+      setFormSubmitting(false);
     }
   });
 
@@ -171,7 +188,6 @@ const BreedingForm = ({ onSubmit: onSubmitProp, preselectedDogId }: BreedingForm
                     selected={field.value}
                     onSelect={field.onChange}
                     initialFocus
-                    className={cn("p-3 pointer-events-auto")}
                   />
                 </PopoverContent>
               </Popover>
@@ -229,8 +245,8 @@ const BreedingForm = ({ onSubmit: onSubmitProp, preselectedDogId }: BreedingForm
           )}
         />
 
-        <Button type="submit" className="w-full">
-          Deckakt eintragen
+        <Button type="submit" className="w-full" disabled={formSubmitting}>
+          {formSubmitting ? 'Wird gespeichert...' : 'Deckakt eintragen'}
         </Button>
       </form>
     </Form>

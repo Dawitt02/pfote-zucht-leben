@@ -28,7 +28,7 @@ interface BreedingCalendarProps {
 }
 
 const BreedingCalendar = ({ onSelectDate, onAddEvent }: BreedingCalendarProps) => {
-  const { breedingEvents, heatCycles, dogs } = useDogs();
+  const { breedingEvents, heatCycles, dogs, updateBreedingEvent } = useDogs();
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
   const [currentMonth, setCurrentMonth] = useState<Date>(new Date());
 
@@ -103,6 +103,13 @@ const BreedingCalendar = ({ onSelectDate, onAddEvent }: BreedingCalendarProps) =
           "h-9 w-9 p-0 font-normal relative flex items-center justify-center",
           dayClassName
         )}
+        onClick={() => {
+          // When clicking on a day, set the selected date and call the onSelectDate function
+          setSelectedDate(day);
+          if (onSelectDate) {
+            onSelectDate(day);
+          }
+        }}
       >
         <div>{format(day, 'd')}</div>
         {hasEvent && (
@@ -194,8 +201,12 @@ const BreedingCalendar = ({ onSelectDate, onAddEvent }: BreedingCalendarProps) =
               {selectedDayEvents.map((event) => (
                 <div 
                   key={event.id} 
-                  className="p-3 rounded-md border-l-4" 
+                  className="p-3 rounded-md border-l-4 cursor-pointer hover:bg-slate-50"
                   style={{ borderLeftColor: event.color || '#8B5CF6' }}
+                  onClick={() => {
+                    // In the future, we could add edit functionality here
+                    console.log("Event clicked:", event);
+                  }}
                 >
                   <div className="font-medium">{event.title}</div>
                   <div className="text-sm text-muted-foreground">

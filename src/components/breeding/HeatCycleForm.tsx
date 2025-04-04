@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { addDays } from 'date-fns';
 import { format } from 'date-fns';
@@ -45,6 +46,7 @@ const HeatCycleForm = ({
 }: HeatCycleFormProps) => {
   const { dogs, addHeatCycle, updateHeatCycle } = useDogs();
   const femaleDogsOnly = dogs.filter(dog => dog.gender === 'female');
+  const [formSubmitting, setFormSubmitting] = useState(false);
   
   const initialStartDate = defaultValues?.startDate ? 
     (defaultValues.startDate instanceof Date ? 
@@ -68,7 +70,15 @@ const HeatCycleForm = ({
 
   const handleSubmit = form.handleSubmit((data) => {
     try {
+      setFormSubmitting(true);
       const { dogId, startDate, calculateFertile, notes } = data;
+      
+      if (!dogId) {
+        toast.error('Bitte wähle eine Hündin aus');
+        setFormSubmitting(false);
+        return;
+      }
+      
       const dogName = dogs.find(d => d.id === dogId)?.name || 'Hund';
       
       let fertileData = undefined;
@@ -116,6 +126,8 @@ const HeatCycleForm = ({
     } catch (error) {
       toast.error('Fehler beim Speichern der Läufigkeitsdaten');
       console.error(error);
+    } finally {
+      setFormSubmitting(false);
     }
   });
 
@@ -184,12 +196,11 @@ const HeatCycleForm = ({
                     selected={field.value}
                     onSelect={field.onChange}
                     initialFocus
-                    className={cn("p-3 pointer-events-auto")}
                   />
                 </PopoverContent>
               </Popover>
               <FormDescription>
-                Wähle den ersten Tag der Läufigkeit aus
+                Wähle den ersten Tag der Läufigkeit
               </FormDescription>
               <FormMessage />
             </FormItem>
@@ -206,15 +217,13 @@ const HeatCycleForm = ({
                   type="checkbox"
                   checked={field.value}
                   onChange={(e) => field.onChange(e.target.checked)}
-                  className="w-4 h-4 mt-1"
+                  className="form-checkbox h-4 w-4"
                 />
               </FormControl>
               <div className="space-y-1 leading-none">
-                <FormLabel>
-                  Automatisch fruchtbare Tage berechnen
-                </FormLabel>
+                <FormLabel>Fruchtbare Tage berechnen</FormLabel>
                 <FormDescription>
-                  Die fruchtbare Zeit wird automatisch als 9-14 Tage nach Beginn der Läufigkeit berechnet
+                  Automatisch fruchtbare Tage (Tag 9-14 der Läufigkeit) markieren
                 </FormDescription>
               </div>
             </FormItem>
@@ -226,7 +235,7 @@ const HeatCycleForm = ({
           name="notes"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Notizen</FormLabel>
+              <FormLabel>Notizen (optional)</FormLabel>
               <FormControl>
                 <Textarea
                   placeholder="Notizen zur Läufigkeit..."
@@ -239,8 +248,8 @@ const HeatCycleForm = ({
           )}
         />
 
-        <Button type="submit" className="w-full">
-          {mode === 'add' ? 'Läufigkeit eintragen' : 'Läufigkeit aktualisieren'}
+        <Button type="submit" className="w-full" disabled={formSubmitting}>
+          {formSubmitting ? 'Wird gespeichert...' : mode === 'add' ? 'Läufigkeit hinzufügen' : 'Änderungen speichern'}
         </Button>
       </form>
     </Form>

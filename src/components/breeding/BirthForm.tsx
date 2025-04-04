@@ -1,12 +1,11 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { format } from 'date-fns';
 import { CalendarIcon } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
-import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useNavigate } from 'react-router-dom';
+import * as z from 'zod';
 
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -25,7 +24,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
-import {
+import { 
   Select,
   SelectContent,
   SelectItem,
@@ -36,8 +35,13 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useDogs, Litter } from '@/context/DogContext';
 
+interface BirthFormProps {
+  onSubmit?: () => void;
+  preselectedLitterId?: string;
+}
+
 const birthFormSchema = z.object({
-  litterId: z.string(),
+  litterId: z.string().min(1, { message: "Bitte wähle einen Wurf aus" }),
   birthDate: z.date(),
   puppyCount: z.string().optional(),
   males: z.string().optional(),
@@ -45,24 +49,27 @@ const birthFormSchema = z.object({
   notes: z.string().optional(),
 });
 
-type BirthFormValues = z.infer<typeof birthFormSchema>;
+type FormValues = z.infer<typeof birthFormSchema>;
 
-interface BirthFormProps {
-  onSubmit?: () => void;
-  preselectedLitterId?: string;
-  navigateToDetail?: boolean;
-}
-
-const BirthForm = ({ 
-  onSubmit: onSubmitProp, 
-  preselectedLitterId,
-  navigateToDetail = false 
-}: BirthFormProps) => {
+const BirthForm = ({ onSubmit: onSubmitProp, preselectedLitterId }: BirthFormProps) => {
   const { dogs, litters, recordBirth } = useDogs();
-  const navigate = useNavigate();
-  const pendingLitters = litters.filter(litter => !litter.birthDate);
+  const [formSubmitting, setFormSubmitting] = useState(false);
   
-  const form = useForm<BirthFormValues>({
+  // Filter litters that don't have a birth date recorded yet
+  const pendingBirths = litters
+    .filter(litter => !litter.birthDate)
+    .map(litter => {
+      const dogName = dogs.find(d => d.id === litter.dogId)?.name || 'Unbekannt';
+      return {
+        ...litter,
+        dogName,
+        breedingDate: litter.breedingDate instanceof Date ? 
+          litter.breedingDate : 
+          new Date(litter.breedingDate)
+      };
+    });
+  
+  const form = useForm<FormValues>({
     resolver: zodResolver(birthFormSchema),
     defaultValues: {
       litterId: preselectedLitterId || '',
@@ -73,52 +80,72 @@ const BirthForm = ({
       notes: ''
     }
   });
+  
+  // Set the preselected litter ID when it changes
+  useEffect(() => {
+    if (preselectedLitterId) {
+      form.setValue('litterId', preselectedLitterId);
+    }
+  }, [preselectedLitterId, form]);
 
   const handleSubmit = form.handleSubmit((data) => {
     try {
+      setFormSubmitting(true);
       const { litterId, birthDate, puppyCount, males, females, notes } = data;
-      const litter = litters.find(l => l.id === litterId);
-      if (!litter) {
-        toast.error('Ausgewählter Wurf nicht gefunden');
+      
+      const selectedLitter = litters.find(l => l.id === litterId);
+      if (!selectedLitter) {
+        toast.error('Der ausgewählte Wurf wurde nicht gefunden');
+        setFormSubmitting(false);
         return;
       }
       
-      const dogName = dogs.find(d => d.id === litter.dogId)?.name || 'Hündin';
+      const dogName = dogs.find(d => d.id === selectedLitter.dogId)?.name || 'Unbekannter Hund';
       
-      // Record birth and schedule all events
       recordBirth(
-        litterId,
+        litterId, 
         birthDate, 
-        Number(puppyCount) || undefined, 
-        Number(males) || undefined, 
-        Number(females) || undefined, 
+        puppyCount ? parseInt(puppyCount) : undefined, 
+        males ? parseInt(males) : undefined, 
+        females ? parseInt(females) : undefined,
         notes
       );
       
-      toast.success(`Wurf für ${dogName} erfolgreich eingetragen`);
+      toast.success(`Geburt für ${dogName} erfolgreich eingetragen`);
       
       if (onSubmitProp) {
         onSubmitProp();
       }
-      
-      if (navigateToDetail) {
-        navigate(`/breeding/litter/${litterId}`);
-        return;
-      }
-      
-      form.reset({
-        litterId: '',
-        birthDate: new Date(),
-        puppyCount: '',
-        males: '',
-        females: '',
-        notes: ''
-      });
     } catch (error) {
-      toast.error('Fehler beim Speichern der Wurfdaten');
+      toast.error('Fehler beim Speichern der Geburtsdaten');
       console.error(error);
+    } finally {
+      setFormSubmitting(false);
     }
   });
+  
+  // Calculate males and females based on puppy count
+  const totalPuppies = form.watch('puppyCount');
+  const males = form.watch('males');
+  const females = form.watch('females');
+  
+  // Validate that males + females = total if all are filled
+  useEffect(() => {
+    const puppyTotal = parseInt(totalPuppies || '0');
+    const malesCount = parseInt(males || '0');
+    const femalesCount = parseInt(females || '0');
+    
+    if (puppyTotal > 0 && malesCount > 0 && femalesCount > 0) {
+      if (malesCount + femalesCount !== puppyTotal) {
+        form.setError('puppyCount', {
+          type: 'manual',
+          message: 'Gesamtzahl stimmt nicht mit Rüden + Hündinnen überein'
+        });
+      } else {
+        form.clearErrors('puppyCount');
+      }
+    }
+  }, [totalPuppies, males, females, form]);
 
   return (
     <Form {...form}>
@@ -128,7 +155,7 @@ const BirthForm = ({
           name="litterId"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Wurf wählen</FormLabel>
+              <FormLabel>Wurf auswählen</FormLabel>
               <Select
                 onValueChange={field.onChange}
                 defaultValue={field.value}
@@ -139,26 +166,17 @@ const BirthForm = ({
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  {pendingLitters.length === 0 ? (
-                    <SelectItem value="none" disabled>Keine anstehenden Würfe</SelectItem>
+                  {pendingBirths.length === 0 ? (
+                    <SelectItem disabled value="none">Keine anstehenden Würfe</SelectItem>
                   ) : (
-                    pendingLitters.map(litter => {
-                      const dog = dogs.find(d => d.id === litter.dogId);
-                      const expectedDate = new Date(litter.breedingDate);
-                      expectedDate.setDate(expectedDate.getDate() + 60);
-                      
-                      return (
-                        <SelectItem key={litter.id} value={litter.id}>
-                          {dog?.name || 'Unbekannt'} (erwartet: {format(expectedDate, 'dd.MM.yyyy')})
-                        </SelectItem>
-                      );
-                    })
+                    pendingBirths.map(litter => (
+                      <SelectItem key={litter.id} value={litter.id}>
+                        {litter.dogName} - {format(litter.breedingDate, 'dd.MM.yyyy')}
+                      </SelectItem>
+                    ))
                   )}
                 </SelectContent>
               </Select>
-              <FormDescription>
-                Wähle den Wurf, für den das Geburtsdatum eingetragen werden soll
-              </FormDescription>
               <FormMessage />
             </FormItem>
           )}
@@ -195,33 +213,51 @@ const BirthForm = ({
                     selected={field.value}
                     onSelect={field.onChange}
                     initialFocus
-                    className={cn("p-3 pointer-events-auto")}
                   />
                 </PopoverContent>
               </Popover>
-              <FormDescription>
-                Wähle das Datum der Geburt
-              </FormDescription>
               <FormMessage />
             </FormItem>
           )}
         />
 
-        <div className="grid grid-cols-3 gap-4">
-          <FormField
-            control={form.control}
-            name="puppyCount"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Anzahl Welpen</FormLabel>
-                <FormControl>
-                  <Input placeholder="z.B. 6" type="number" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+        <FormField
+          control={form.control}
+          name="puppyCount"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Anzahl der Welpen</FormLabel>
+              <FormControl>
+                <Input 
+                  type="number" 
+                  placeholder="Gesamtanzahl der Welpen" 
+                  {...field}
+                  onChange={(e) => {
+                    field.onChange(e);
+                    
+                    // Auto-calculate males and females if only one is filled
+                    const total = parseInt(e.target.value || '0');
+                    const malesValue = parseInt(males || '0');
+                    const femalesValue = parseInt(females || '0');
+                    
+                    if (total > 0 && malesValue > 0 && femalesValue === 0) {
+                      if (total >= malesValue) {
+                        form.setValue('females', (total - malesValue).toString());
+                      }
+                    } else if (total > 0 && malesValue === 0 && femalesValue > 0) {
+                      if (total >= femalesValue) {
+                        form.setValue('males', (total - femalesValue).toString());
+                      }
+                    }
+                  }}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
+        <div className="grid grid-cols-2 gap-4">
           <FormField
             control={form.control}
             name="males"
@@ -229,7 +265,23 @@ const BirthForm = ({
               <FormItem>
                 <FormLabel>Rüden</FormLabel>
                 <FormControl>
-                  <Input placeholder="z.B. 3" type="number" {...field} />
+                  <Input 
+                    type="number" 
+                    placeholder="Anzahl Rüden" 
+                    {...field}
+                    onChange={(e) => {
+                      field.onChange(e);
+                      // Auto-calculate females if total is filled
+                      const malesValue = parseInt(e.target.value || '0');
+                      const total = parseInt(totalPuppies || '0');
+                      
+                      if (total > 0 && malesValue >= 0) {
+                        if (total >= malesValue) {
+                          form.setValue('females', (total - malesValue).toString());
+                        }
+                      }
+                    }}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -243,7 +295,23 @@ const BirthForm = ({
               <FormItem>
                 <FormLabel>Hündinnen</FormLabel>
                 <FormControl>
-                  <Input placeholder="z.B. 3" type="number" {...field} />
+                  <Input 
+                    type="number" 
+                    placeholder="Anzahl Hündinnen" 
+                    {...field}
+                    onChange={(e) => {
+                      field.onChange(e);
+                      // Auto-calculate males if total is filled
+                      const femalesValue = parseInt(e.target.value || '0');
+                      const total = parseInt(totalPuppies || '0');
+                      
+                      if (total > 0 && femalesValue >= 0) {
+                        if (total >= femalesValue) {
+                          form.setValue('males', (total - femalesValue).toString());
+                        }
+                      }
+                    }}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -269,8 +337,8 @@ const BirthForm = ({
           )}
         />
 
-        <Button type="submit" className="w-full">
-          Wurf eintragen & Termine planen
+        <Button type="submit" className="w-full" disabled={formSubmitting || pendingBirths.length === 0}>
+          {formSubmitting ? 'Wird gespeichert...' : 'Geburt eintragen'}
         </Button>
       </form>
     </Form>
