@@ -1,7 +1,7 @@
 
-import React, { useState } from 'react';
-import { addDays } from 'date-fns';
-import { format } from 'date-fns';
+import React, { useState, useEffect } from 'react';
+import { addMonths, isBefore, format } from 'date-fns';
+import { de } from 'date-fns/locale';
 import { CalendarIcon } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
@@ -32,6 +32,11 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
+import {
+  Alert,
+  AlertDescription,
+  AlertTitle,
+} from "@/components/ui/alert";
 
 interface HeatCycleFormProps {
   onSubmit?: () => void;
@@ -44,9 +49,11 @@ const HeatCycleForm = ({
   defaultValues,
   mode = 'add' 
 }: HeatCycleFormProps) => {
-  const { dogs, addHeatCycle, updateHeatCycle } = useDogs();
+  const { dogs, heatCycles, addHeatCycle, updateHeatCycle } = useDogs();
   const femaleDogsOnly = dogs.filter(dog => dog.gender === 'female');
   const [formSubmitting, setFormSubmitting] = useState(false);
+  const [validationWarning, setValidationWarning] = useState<string | null>(null);
+  const [previousHeatInfo, setPreviousHeatInfo] = useState<{date: Date, id: string} | null>(null);
   
   const initialStartDate = defaultValues?.startDate ? 
     (defaultValues.startDate instanceof Date ? 
@@ -68,6 +75,58 @@ const HeatCycleForm = ({
     }
   });
 
+  // Watch for dog selection and date changes to validate
+  const selectedDogId = form.watch('dogId');
+  const selectedDate = form.watch('startDate');
+
+  // Check for previous heat cycles when dog or date changes
+  useEffect(() => {
+    if (!selectedDogId) {
+      setValidationWarning(null);
+      setPreviousHeatInfo(null);
+      return;
+    }
+
+    // Get this dog's heat cycles, sorted by date (newest first)
+    const dogHeatCycles = heatCycles
+      .filter(cycle => cycle.dogId === selectedDogId)
+      .map(cycle => ({
+        ...cycle,
+        startDate: cycle.startDate instanceof Date ? cycle.startDate : new Date(cycle.startDate)
+      }))
+      .sort((a, b) => b.startDate.getTime() - a.startDate.getTime());
+
+    // Skip the current cycle being edited in edit mode
+    const relevantCycles = mode === 'edit' && defaultValues?.id
+      ? dogHeatCycles.filter(cycle => cycle.id !== defaultValues.id)
+      : dogHeatCycles;
+
+    if (relevantCycles.length > 0) {
+      const lastHeat = relevantCycles[0];
+      const lastHeatDate = lastHeat.startDate;
+      const minimumNextDate = addMonths(lastHeatDate, 6);
+      
+      // Store previous heat info for potential replacement message
+      setPreviousHeatInfo({
+        date: lastHeatDate,
+        id: lastHeat.id
+      });
+
+      // Check if selected date is too soon
+      if (selectedDate && isBefore(selectedDate, minimumNextDate)) {
+        setValidationWarning(
+          `Die letzte Läufigkeit war am ${format(lastHeatDate, 'dd.MM.yyyy', { locale: de })}. 
+           Eine neue Läufigkeit kann frühestens am ${format(minimumNextDate, 'dd.MM.yyyy', { locale: de })} eingetragen werden.`
+        );
+      } else {
+        setValidationWarning(null);
+      }
+    } else {
+      setPreviousHeatInfo(null);
+      setValidationWarning(null);
+    }
+  }, [selectedDogId, selectedDate, heatCycles, defaultValues?.id, mode]);
+
   const handleSubmit = form.handleSubmit((data) => {
     try {
       setFormSubmitting(true);
@@ -79,6 +138,15 @@ const HeatCycleForm = ({
         return;
       }
       
+      // If there's a warning and it's not edit mode, prevent submission
+      if (validationWarning && mode === 'add') {
+        toast.error('Die Läufigkeit kann nicht gespeichert werden', {
+          description: validationWarning
+        });
+        setFormSubmitting(false);
+        return;
+      }
+
       const dogName = dogs.find(d => d.id === dogId)?.name || 'Hund';
       
       let fertileData = undefined;
@@ -92,15 +160,34 @@ const HeatCycleForm = ({
         };
       }
       
-      if (mode === 'add') {
+      // Get all previous heat cycles for this dog
+      const dogPreviousHeatCycles = heatCycles
+        .filter(cycle => cycle.dogId === dogId)
+        .sort((a, b) => {
+          const dateA = a.startDate instanceof Date ? a.startDate : new Date(a.startDate);
+          const dateB = b.startDate instanceof Date ? b.startDate : new Date(b.startDate);
+          return dateB.getTime() - dateA.getTime(); // Newest first
+        });
+        
+      // If adding new and there are previous cycles for this dog, remove the previous one
+      if (mode === 'add' && previousHeatInfo && dogPreviousHeatCycles.length > 0) {
+        // The replacement logic is handled in the context
         addHeatCycle({
           dogId,
           startDate,
           fertile: fertileData,
-          notes
+          notes,
+          replacePrevious: true // Signal to context to replace previous
         });
-        toast.success(`Läufigkeit für ${dogName} erfolgreich hinzugefügt`);
+        
+        toast.success(
+          `Läufigkeit für ${dogName} erfolgreich hinzugefügt`, 
+          { 
+            description: `Die vorherige Läufigkeit vom ${format(previousHeatInfo.date, 'dd.MM.yyyy', { locale: de })} wurde ersetzt.`
+          }
+        );
       } else if (mode === 'edit' && defaultValues?.id) {
+        // Normal update for edit mode
         updateHeatCycle({
           id: defaultValues.id,
           dogId,
@@ -109,6 +196,15 @@ const HeatCycleForm = ({
           notes
         });
         toast.success(`Läufigkeit für ${dogName} erfolgreich aktualisiert`);
+      } else {
+        // Normal add for first heat cycle
+        addHeatCycle({
+          dogId,
+          startDate,
+          fertile: fertileData,
+          notes
+        });
+        toast.success(`Läufigkeit für ${dogName} erfolgreich hinzugefügt`);
       }
       
       if (onSubmitProp) {
@@ -130,6 +226,13 @@ const HeatCycleForm = ({
       setFormSubmitting(false);
     }
   });
+
+  // Helper function to add days to a date
+  const addDays = (date: Date, days: number): Date => {
+    const result = new Date(date);
+    result.setDate(date.getDate() + days);
+    return result;
+  };
 
   return (
     <Form {...form}>
@@ -190,12 +293,13 @@ const HeatCycleForm = ({
                     </Button>
                   </FormControl>
                 </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
+                <PopoverContent className="w-auto p-0 pointer-events-auto" align="start">
                   <Calendar
                     mode="single"
                     selected={field.value}
                     onSelect={field.onChange}
                     initialFocus
+                    className="p-3 pointer-events-auto"
                   />
                 </PopoverContent>
               </Popover>
@@ -206,6 +310,24 @@ const HeatCycleForm = ({
             </FormItem>
           )}
         />
+
+        {validationWarning && (
+          <Alert variant="destructive">
+            <AlertTitle>Warnung</AlertTitle>
+            <AlertDescription>
+              {validationWarning}
+            </AlertDescription>
+          </Alert>
+        )}
+
+        {previousHeatInfo && !validationWarning && mode === 'add' && (
+          <Alert variant="warning">
+            <AlertTitle>Hinweis</AlertTitle>
+            <AlertDescription>
+              Eine neue Läufigkeit wird die vorherige vom {format(previousHeatInfo.date, 'dd.MM.yyyy', { locale: de })} ersetzen.
+            </AlertDescription>
+          </Alert>
+        )}
 
         <FormField
           control={form.control}
@@ -248,7 +370,7 @@ const HeatCycleForm = ({
           )}
         />
 
-        <Button type="submit" className="w-full" disabled={formSubmitting}>
+        <Button type="submit" className="w-full" disabled={formSubmitting || (!!validationWarning && mode === 'add')}>
           {formSubmitting ? 'Wird gespeichert...' : mode === 'add' ? 'Läufigkeit hinzufügen' : 'Änderungen speichern'}
         </Button>
       </form>

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { format, addDays, differenceInDays, addMonths } from 'date-fns';
@@ -65,10 +64,8 @@ const BreedingDogProfile = () => {
   const [isAddBirthDialogOpen, setIsAddBirthDialogOpen] = useState(false);
   const [selectedLitterId, setSelectedLitterId] = useState<string | undefined>(undefined);
   
-  // Find the current dog
   const dog = dogs.find(d => d.id === dogId);
   
-  // Filter data for this dog
   const dogHeatCycles = heatCycles
     .filter(cycle => cycle.dogId === dogId)
     .sort((a, b) => {
@@ -106,7 +103,6 @@ const BreedingDogProfile = () => {
     })
     .slice(0, 5);
     
-  // Calculate next expected heat cycle
   const calculateNextHeat = () => {
     if (dogHeatCycles.length === 0) return null;
     
@@ -114,7 +110,6 @@ const BreedingDogProfile = () => {
       ? dogHeatCycles[0].startDate 
       : new Date(dogHeatCycles[0].startDate);
       
-    // Calculate average cycle length if we have multiple cycles
     let cycleLength = 180; // Default to 6 months
     if (dogHeatCycles.length > 1) {
       let totalDays = 0;
@@ -134,19 +129,15 @@ const BreedingDogProfile = () => {
     return addDays(lastHeatDate, cycleLength);
   };
   
-  // Get the next expected heat date
   const nextExpectedHeat = calculateNextHeat();
   
-  // Find pending births (litters without birthDate)
   const pendingBirths = dogLitters.filter(litter => !litter.birthDate);
   
-  // Handle opening birth form for a specific litter
   const handleLitterBirth = (litterId: string) => {
     setSelectedLitterId(litterId);
     setIsAddBirthDialogOpen(true);
   };
   
-  // Navigate back to breeding page
   const handleBackClick = () => {
     navigate('/breeding');
   };
@@ -203,7 +194,6 @@ const BreedingDogProfile = () => {
           </div>
         </div>
 
-        {/* Dog Info Card */}
         <Card className="mb-4">
           <CardContent className="p-4">
             <div className="flex items-center">
@@ -244,7 +234,6 @@ const BreedingDogProfile = () => {
           </CardContent>
         </Card>
 
-        {/* Next Expected Heat and Pending Birth */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
           {nextExpectedHeat && (
             <Card className="relative overflow-hidden border-l-4 border-[#FFDEE2]">
@@ -273,7 +262,6 @@ const BreedingDogProfile = () => {
                   <div>
                     <h3 className="font-medium text-sm">Wurf erwartet</h3>
                     {pendingBirths.map((litter) => {
-                      // Calculate expected birth date (60 days after breeding)
                       const breedingDate = litter.breedingDate instanceof Date 
                         ? litter.breedingDate 
                         : new Date(litter.breedingDate);
@@ -328,9 +316,7 @@ const BreedingDogProfile = () => {
           </TabsList>
           
           <TabsContent value="overview">
-            {/* Overview Tab */}
             <div className="space-y-4">
-              {/* Calendar Section */}
               <Card>
                 <CardHeader className="pb-2 pt-4 px-4">
                   <CardTitle className="text-base">Kalender</CardTitle>
@@ -347,7 +333,6 @@ const BreedingDogProfile = () => {
                 </CardContent>
               </Card>
               
-              {/* Upcoming Events */}
               <Card>
                 <CardHeader className="pb-1 pt-3 px-4">
                   <CardTitle className="text-sm">Anstehende Termine</CardTitle>
@@ -390,13 +375,11 @@ const BreedingDogProfile = () => {
                 </CardContent>
               </Card>
 
-              {/* Statistics */}
               <DogBreedingStats dogId={dogId} />
             </div>
           </TabsContent>
           
           <TabsContent value="heat">
-            {/* Heat Cycles Tab */}
             <Card>
               <CardHeader className="pb-2 pt-3 px-4">
                 <CardTitle className="text-base">Läufigkeiten</CardTitle>
@@ -488,7 +471,6 @@ const BreedingDogProfile = () => {
           </TabsContent>
           
           <TabsContent value="breedings">
-            {/* Breedings Tab */}
             <Card>
               <CardHeader className="pb-2 pt-3 px-4">
                 <CardTitle className="text-base">Deckakte</CardTitle>
@@ -512,13 +494,11 @@ const BreedingDogProfile = () => {
                           ? event.date 
                           : new Date(event.date);
                           
-                        // Find related litter if any
                         const relatedLitter = dogLitters.find(litter => {
                           const breedingDate = litter.breedingDate instanceof Date 
                             ? litter.breedingDate 
                             : new Date(litter.breedingDate);
                           
-                          // Check if dates are close (within 1 day)
                           return Math.abs(differenceInDays(breedingDate, eventDate)) <= 1;
                         });
                         
@@ -627,7 +607,6 @@ const BreedingDogProfile = () => {
           </TabsContent>
           
           <TabsContent value="litters">
-            {/* Litters Tab */}
             <Card>
               <CardHeader className="pb-2 pt-3 px-4">
                 <CardTitle className="text-base">Würfe</CardTitle>
@@ -647,7 +626,6 @@ const BreedingDogProfile = () => {
                         ? litter.breedingDate 
                         : new Date(litter.breedingDate);
                         
-                      // Find related breeding event
                       const relatedBreeding = dogBreedingEvents
                         .filter(event => event.type === 'breeding')
                         .find(event => {
@@ -655,7 +633,6 @@ const BreedingDogProfile = () => {
                             ? event.date 
                             : new Date(event.date);
                           
-                          // Check if dates are close (within 1 day)
                           return Math.abs(differenceInDays(breedingDate, eventDate)) <= 1;
                         });
                         
@@ -792,7 +769,6 @@ const BreedingDogProfile = () => {
         </Tabs>
       </div>
       
-      {/* Dialogs for adding new records */}
       <Dialog open={isAddHeatDialogOpen} onOpenChange={setIsAddHeatDialogOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>

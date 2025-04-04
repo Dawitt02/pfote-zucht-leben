@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, ReactNode } from 'react';
+import { addDays, differenceInDays } from 'date-fns';
 
 // Document type definition
 export interface DogDocument {

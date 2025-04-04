@@ -24,11 +24,14 @@ interface DogBreedingStatsProps {
 }
 
 const DogBreedingStats: React.FC<DogBreedingStatsProps> = ({ dogId }) => {
-  const { heatCycles, litters } = useDogs();
+  const { heatCycles, litters, getLastHeatCycle, getPredictedNextHeat } = useDogs();
   
   // Filter for this dog
   const dogHeatCycles = heatCycles.filter(cycle => cycle.dogId === dogId);
   const dogLitters = litters.filter(litter => litter.dogId === dogId);
+  
+  // Get next predicted heat cycle
+  const nextPredictedHeat = getPredictedNextHeat(dogId);
   
   // Calculate statistics
   const stats = useMemo(() => {
@@ -43,6 +46,7 @@ const DogBreedingStats: React.FC<DogBreedingStatsProps> = ({ dogId }) => {
     let averageCycleLength = 0;
     if (sortedCycles.length > 1) {
       let totalDays = 0;
+      let validCycles = 0;
       for (let i = 0; i < sortedCycles.length - 1; i++) {
         const currentDate = sortedCycles[i].startDate instanceof Date 
           ? sortedCycles[i].startDate 
@@ -51,9 +55,15 @@ const DogBreedingStats: React.FC<DogBreedingStatsProps> = ({ dogId }) => {
           ? sortedCycles[i+1].startDate 
           : new Date(sortedCycles[i+1].startDate);
         
-        totalDays += Math.abs(differenceInDays(currentDate, nextDate));
+        const daysDiff = Math.abs(differenceInDays(currentDate, nextDate));
+        
+        // Only count normal cycles (between 120-240 days) to avoid skewing the average
+        if (daysDiff >= 120 && daysDiff <= 240) {
+          totalDays += daysDiff;
+          validCycles++;
+        }
       }
-      averageCycleLength = Math.round(totalDays / (sortedCycles.length - 1));
+      averageCycleLength = validCycles > 0 ? Math.round(totalDays / validCycles) : 180; // Default to 180 if no valid cycles
     }
     
     // Calculate breeding success rate
@@ -75,9 +85,10 @@ const DogBreedingStats: React.FC<DogBreedingStatsProps> = ({ dogId }) => {
       totalLitters: dogLitters.length,
       completedLitters: birthLitters.length,
       breedingSuccessRate,
-      averageLitterSize
+      averageLitterSize,
+      nextPredictedHeat
     };
-  }, [dogHeatCycles, dogLitters]);
+  }, [dogHeatCycles, dogLitters, nextPredictedHeat]);
   
   return (
     <Card>
@@ -101,6 +112,18 @@ const DogBreedingStats: React.FC<DogBreedingStatsProps> = ({ dogId }) => {
                 <div>
                   <div className="text-xs text-muted-foreground">∅ Zykluslänge</div>
                   <div className="font-medium">{stats.averageCycleLength} Tage</div>
+                </div>
+              </div>
+            )}
+            
+            {stats.nextPredictedHeat && (
+              <div className="flex items-center">
+                <CalendarIcon className="h-4 w-4 mr-2 text-orange-500" />
+                <div>
+                  <div className="text-xs text-muted-foreground">Nächste Läufigkeit</div>
+                  <div className="font-medium">
+                    {format(stats.nextPredictedHeat, 'dd.MM.yyyy', { locale: de })}
+                  </div>
                 </div>
               </div>
             )}
