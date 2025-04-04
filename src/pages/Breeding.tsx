@@ -1,5 +1,4 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import {
   PlusCircle,
@@ -43,7 +42,7 @@ import HeatCycleForm from '@/components/breeding/HeatCycleForm';
 import BreedingForm from '@/components/breeding/BreedingForm';
 import BirthForm from '@/components/breeding/BirthForm';
 import { useDogs } from '@/context/DogContext';
-import { format, addDays } from 'date-fns';
+import { format, addDays, isFuture, isPast, isToday } from 'date-fns';
 import { de } from 'date-fns/locale';
 import { useIsMobile } from '@/hooks/use-mobile';
 
@@ -56,36 +55,67 @@ const Breeding = () => {
   const [selectedLitterId, setSelectedLitterId] = useState<string | undefined>(undefined);
   const isMobile = useIsMobile();
   
+  const normalizedBreedingEvents = breedingEvents.map(event => ({
+    ...event,
+    date: event.date instanceof Date ? event.date : new Date(event.date)
+  }));
+  
+  const normalizedLitters = litters.map(litter => ({
+    ...litter,
+    breedingDate: litter.breedingDate instanceof Date ? 
+      litter.breedingDate : 
+      new Date(litter.breedingDate),
+    birthDate: litter.birthDate ? 
+      (litter.birthDate instanceof Date ? litter.birthDate : new Date(litter.birthDate)) : 
+      undefined
+  }));
+  
+  const normalizedHeatCycles = heatCycles.map(cycle => ({
+    ...cycle,
+    startDate: cycle.startDate instanceof Date ? cycle.startDate : new Date(cycle.startDate),
+    endDate: cycle.endDate ? 
+      (cycle.endDate instanceof Date ? cycle.endDate : new Date(cycle.endDate)) : 
+      undefined,
+    fertile: cycle.fertile ? {
+      startDate: cycle.fertile.startDate instanceof Date ? 
+        cycle.fertile.startDate : 
+        new Date(cycle.fertile.startDate),
+      endDate: cycle.fertile.endDate instanceof Date ? 
+        cycle.fertile.endDate : 
+        new Date(cycle.fertile.endDate)
+    } : undefined
+  }));
+  
   const femaleDogsOnly = dogs.filter(dog => dog.gender === 'female');
   
   const lastHeatCycles = femaleDogsOnly.map(dog => {
-    const dogHeatCycles = heatCycles
+    const dogHeatCycles = normalizedHeatCycles
       .filter(cycle => cycle.dogId === dog.id)
-      .sort((a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime());
+      .sort((a, b) => b.startDate.getTime() - a.startDate.getTime());
     
     return {
       dog,
       lastHeat: dogHeatCycles.length > 0 ? dogHeatCycles[0] : null,
       nextExpectedHeat: dogHeatCycles.length > 0 
-        ? addDays(new Date(dogHeatCycles[0].startDate), 180)
+        ? addDays(dogHeatCycles[0].startDate, 180)
         : null
     };
   });
   
-  const upcomingEvents = breedingEvents
-    .filter(event => new Date(event.date) >= new Date())
-    .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+  const upcomingEvents = normalizedBreedingEvents
+    .filter(event => isFuture(event.date) || isToday(event.date))
+    .sort((a, b) => a.date.getTime() - b.date.getTime())
     .slice(0, 5);
   
-  const recentBreedings = litters
-    .sort((a, b) => new Date(b.breedingDate).getTime() - new Date(a.breedingDate).getTime())
+  const recentBreedings = normalizedLitters
+    .sort((a, b) => b.breedingDate.getTime() - a.breedingDate.getTime())
     .slice(0, 3); // Get the 3 most recent breedings
   
-  const pendingBirths = litters.filter(litter => !litter.birthDate);
+  const pendingBirths = normalizedLitters.filter(litter => !litter.birthDate);
   
   const statistics = {
     upcomingHeatCycles: lastHeatCycles.filter(
-      item => item.nextExpectedHeat && item.nextExpectedHeat > new Date()
+      item => item.nextExpectedHeat && isFuture(item.nextExpectedHeat)
     ).length,
     activeBreedings: pendingBirths.length
   };
@@ -100,7 +130,6 @@ const Breeding = () => {
     setIsAddBirthDialogOpen(true);
   };
 
-  // Component for mobile quick action buttons
   const QuickActionButtons = () => (
     <div className="fixed bottom-20 right-4 flex flex-col gap-3 z-40">
       <Drawer>
@@ -179,7 +208,6 @@ const Breeding = () => {
           )}
         </div>
 
-        {/* Mobile statistics - reduced to only requested ones */}
         <div className="grid grid-cols-2 gap-3 mb-4">
           <Card>
             <CardHeader className="pb-1 pt-3 px-3">
@@ -254,7 +282,7 @@ const Breeding = () => {
                               <div className="flex-1">
                                 <div className="font-medium text-sm">{event.title}</div>
                                 <div className="text-xs text-muted-foreground">
-                                  {dogName} • {format(new Date(event.date), 'dd.MM.yyyy', { locale: de })}
+                                  {dogName} • {format(event.date, 'dd.MM.yyyy', { locale: de })}
                                 </div>
                               </div>
                               <ChevronRight className="h-4 w-4 text-muted-foreground" />
@@ -289,7 +317,7 @@ const Breeding = () => {
                               <div className="font-medium text-sm">{dog.name}</div>
                               <div className="text-xs text-muted-foreground">
                                 {lastHeat 
-                                  ? `Letzte Läufigkeit: ${format(new Date(lastHeat.startDate), 'dd.MM.yyyy', { locale: de })}`
+                                  ? `Letzte Läufigkeit: ${format(lastHeat.startDate, 'dd.MM.yyyy', { locale: de })}`
                                   : 'Keine Läufigkeit erfasst'}
                               </div>
                               {nextExpectedHeat && (
@@ -509,10 +537,8 @@ const Breeding = () => {
         </Tabs>
       </div>
       
-      {/* Floating action button for mobile */}
       {isMobile && <QuickActionButtons />}
       
-      {/* Dialogs */}
       <Dialog open={isAddHeatDialogOpen} onOpenChange={setIsAddHeatDialogOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>

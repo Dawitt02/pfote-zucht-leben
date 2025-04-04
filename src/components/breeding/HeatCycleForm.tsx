@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { addDays } from 'date-fns';
 import { format } from 'date-fns';
@@ -47,6 +46,12 @@ const HeatCycleForm = ({
   const { dogs, addHeatCycle, updateHeatCycle } = useDogs();
   const femaleDogsOnly = dogs.filter(dog => dog.gender === 'female');
   
+  const initialStartDate = defaultValues?.startDate ? 
+    (defaultValues.startDate instanceof Date ? 
+      defaultValues.startDate : 
+      new Date(defaultValues.startDate)) : 
+    new Date();
+  
   const form = useForm<{
     dogId: string;
     startDate: Date;
@@ -55,7 +60,7 @@ const HeatCycleForm = ({
   }>({
     defaultValues: {
       dogId: defaultValues?.dogId || '',
-      startDate: defaultValues?.startDate || new Date(),
+      startDate: initialStartDate,
       calculateFertile: !!defaultValues?.fertile,
       notes: defaultValues?.notes || ''
     }
@@ -68,9 +73,7 @@ const HeatCycleForm = ({
       
       let fertileData = undefined;
       if (calculateFertile) {
-        // Fertile period usually starts 9-10 days after the first day of heat
         const fertileStartDate = addDays(startDate, 9);
-        // Fertile period typically lasts 5-6 days
         const fertileEndDate = addDays(fertileStartDate, 5);
         
         fertileData = {
@@ -181,6 +184,7 @@ const HeatCycleForm = ({
                     selected={field.value}
                     onSelect={field.onChange}
                     initialFocus
+                    className={cn("p-3 pointer-events-auto")}
                   />
                 </PopoverContent>
               </Popover>

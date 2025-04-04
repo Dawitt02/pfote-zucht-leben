@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { Calendar as CalendarIcon, Plus } from 'lucide-react';
-import { format, isSameDay, isSameMonth, isWithinInterval } from 'date-fns';
+import { format, isSameDay, isSameMonth, isWithinInterval, addDays, parseISO } from 'date-fns';
 import { de } from 'date-fns/locale';
 import { DayContent, DayContentProps } from 'react-day-picker';
 
@@ -32,17 +32,27 @@ const BreedingCalendar = ({ onSelectDate, onAddEvent }: BreedingCalendarProps) =
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
   const [currentMonth, setCurrentMonth] = useState<Date>(new Date());
 
+  // Ensure all dates are properly parsed if they're not already Date objects
+  const normalizedBreedingEvents = breedingEvents.map(event => ({
+    ...event,
+    date: event.date instanceof Date ? event.date : new Date(event.date)
+  }));
+
   // Get events for the current month
-  const eventsInCurrentMonth = breedingEvents.filter(event => 
-    isSameMonth(new Date(event.date), currentMonth)
+  const eventsInCurrentMonth = normalizedBreedingEvents.filter(event => 
+    isSameMonth(event.date, currentMonth)
   );
 
   // Get fertility periods for visual marking on calendar
   const fertilityPeriods = heatCycles
     .filter(cycle => cycle.fertile)
     .map(cycle => ({
-      start: cycle.fertile!.startDate,
-      end: cycle.fertile!.endDate,
+      start: cycle.fertile!.startDate instanceof Date ? 
+        cycle.fertile!.startDate : 
+        new Date(cycle.fertile!.startDate),
+      end: cycle.fertile!.endDate instanceof Date ? 
+        cycle.fertile!.endDate : 
+        new Date(cycle.fertile!.endDate),
       dogId: cycle.dogId
     }));
 
@@ -52,22 +62,22 @@ const BreedingCalendar = ({ onSelectDate, onAddEvent }: BreedingCalendarProps) =
     
     // Check if there are events on this day
     const hasEvent = eventsInCurrentMonth.some(event => 
-      isSameDay(new Date(event.date), day)
+      isSameDay(event.date, day)
     );
 
     // Check if this day is in a fertility period
     const isFertileDay = fertilityPeriods.some(period => 
-      isWithinInterval(day, { start: new Date(period.start), end: new Date(period.end) })
+      isWithinInterval(day, { start: period.start, end: period.end })
     );
 
     // Check if this day is a heat start
-    const isHeatStartDay = breedingEvents.some(event => 
-      event.type === 'heatStart' && isSameDay(new Date(event.date), day)
+    const isHeatStartDay = normalizedBreedingEvents.some(event => 
+      event.type === 'heatStart' && isSameDay(event.date, day)
     );
 
     // Check if this day is expected birth
-    const isBirthDay = breedingEvents.some(event => 
-      event.type === 'birthExpected' && isSameDay(new Date(event.date), day)
+    const isBirthDay = normalizedBreedingEvents.some(event => 
+      event.type === 'birthExpected' && isSameDay(event.date, day)
     );
     
     // Determine the styling based on event types
@@ -93,7 +103,6 @@ const BreedingCalendar = ({ onSelectDate, onAddEvent }: BreedingCalendarProps) =
           "h-9 w-9 p-0 font-normal relative flex items-center justify-center",
           dayClassName
         )}
-        {...props}
       >
         <div>{format(day, 'd')}</div>
         {hasEvent && (
@@ -110,9 +119,9 @@ const BreedingCalendar = ({ onSelectDate, onAddEvent }: BreedingCalendarProps) =
 
   // Filter events for the selected date
   const selectedDayEvents = selectedDate 
-    ? breedingEvents
-        .filter(event => isSameDay(new Date(event.date), selectedDate))
-        .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+    ? normalizedBreedingEvents
+        .filter(event => isSameDay(event.date, selectedDate))
+        .sort((a, b) => a.date.getTime() - b.date.getTime())
     : [];
 
   // Get dog names for display
