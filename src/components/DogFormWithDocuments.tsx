@@ -3,10 +3,13 @@ import { useNavigate } from 'react-router-dom';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import * as z from 'zod';
+import { format, differenceInYears, differenceInMonths } from "date-fns";
+import { de } from "date-fns/locale";
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { Calendar } from '@/components/ui/calendar';
 import { useToast } from '@/hooks/use-toast';
 import DocumentUpload from './DocumentUpload';
 import { Dog, DogDocument, useDogs } from '@/context/DogContext';
@@ -34,11 +37,18 @@ import {
   TabsList,
   TabsTrigger,
 } from "@/components/ui/tabs";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 
 const dogFormSchema = z.object({
   name: z.string().min(2, { message: 'Name muss mindestens 2 Zeichen lang sein' }),
   breed: z.string().min(2, { message: 'Rasse muss mindestens 2 Zeichen lang sein' }),
-  age: z.string(),
+  birthdate: z.date({
+    required_error: "Bitte geben Sie das Geburtsdatum ein",
+  }),
   gender: z.enum(['male', 'female']),
   breedingStatus: z.string().optional(),
   
@@ -70,6 +80,24 @@ interface DogFormWithDocumentsProps {
   mode: 'add' | 'edit';
 }
 
+// Helper function to calculate age
+const calculateAge = (birthdate: Date): string => {
+  if (!birthdate) return "";
+  
+  const today = new Date();
+  const years = differenceInYears(today, birthdate);
+  
+  if (years === 0) {
+    const months = differenceInMonths(today, birthdate);
+    return `${months} ${months === 1 ? 'Monat' : 'Monate'}`;
+  } else {
+    const monthsAfterYear = differenceInMonths(today, birthdate) % 12;
+    return monthsAfterYear > 0 
+      ? `${years} ${years === 1 ? 'Jahr' : 'Jahre'} und ${monthsAfterYear} ${monthsAfterYear === 1 ? 'Monat' : 'Monate'}`
+      : `${years} ${years === 1 ? 'Jahr' : 'Jahre'}`;
+  }
+};
+
 const DogFormWithDocuments: React.FC<DogFormWithDocumentsProps> = ({ initialData, mode }) => {
   const { addDog, updateDog, addDocumentToDog } = useDogs();
   const navigate = useNavigate();
@@ -77,12 +105,34 @@ const DogFormWithDocuments: React.FC<DogFormWithDocumentsProps> = ({ initialData
   const [documents, setDocuments] = useState<Record<string, Omit<DogDocument, 'id'>>>({});
   const [imagePreview, setImagePreview] = useState<string | undefined>(initialData?.imageUrl);
 
-  const defaultValues: Partial<DogFormValues> = initialData || {
-    name: '',
-    breed: '',
-    age: '',
-    gender: 'male',
-    breedingStatus: '',
+  // Convert stored age string to a Date if needed for initial values
+  let initialBirthdate: Date | undefined = undefined;
+  if (initialData?.birthdate) {
+    initialBirthdate = new Date(initialData.birthdate);
+  }
+
+  const defaultValues: Partial<DogFormValues> = {
+    name: initialData?.name || '',
+    breed: initialData?.breed || '',
+    birthdate: initialBirthdate || new Date(),
+    gender: initialData?.gender || 'male',
+    breedingStatus: initialData?.breedingStatus || '',
+  fullName: initialData?.fullName || '',
+  registrationNumber: initialData?.registrationNumber || '',
+  chipNumber: initialData?.chipNumber || '',
+  notes: initialData?.notes || '',
+  pedigree: initialData?.pedigree || '',
+  geneticTestResults: initialData?.geneticTestResults || '',
+  healthStatus: initialData?.healthStatus || '',
+  vaccinationHistory: initialData?.vaccinationHistory || '',
+  weight: initialData?.weight || '',
+  size: initialData?.size || '',
+  cycleInformation: initialData?.cycleInformation || '',
+  breedingHistory: initialData?.breedingHistory || '',
+  litterInformation: initialData?.litterInformation || '',
+  breedingRestrictions: initialData?.breedingRestrictions || '',
+  exhibitionResults: initialData?.exhibitionResults || '',
+  temperamentAssessment: initialData?.temperamentAssessment || '',
   };
 
   const form = useForm<DogFormValues>({
@@ -92,7 +142,12 @@ const DogFormWithDocuments: React.FC<DogFormWithDocumentsProps> = ({ initialData
 
   useEffect(() => {
     if (initialData) {
-      form.reset(initialData);
+      // When initialData changes, update form with converted birthdate
+      const formValues = {...initialData};
+      if (initialData.birthdate) {
+        formValues.birthdate = new Date(initialData.birthdate);
+      }
+      form.reset(formValues);
       setImagePreview(initialData.imageUrl);
     }
   }, [initialData, form]);
@@ -100,6 +155,8 @@ const DogFormWithDocuments: React.FC<DogFormWithDocumentsProps> = ({ initialData
   const onSubmit = (values: DogFormValues) => {
     const dogData = {
       ...values,
+      // Store the ISO string of birthdate for consistent storage
+      birthdate: values.birthdate.toISOString(),
       imageUrl: imagePreview || 'https://images.unsplash.com/photo-1543466835-00a7907e9de1',
     };
 
@@ -107,7 +164,7 @@ const DogFormWithDocuments: React.FC<DogFormWithDocumentsProps> = ({ initialData
       const newDog: Omit<Dog, 'id'> = {
         name: dogData.name,
         breed: dogData.breed,
-        age: dogData.age,
+        birthdate: dogData.birthdate,
         gender: dogData.gender,
         imageUrl: dogData.imageUrl,
         breedingStatus: dogData.breedingStatus || '',
@@ -227,13 +284,42 @@ const DogFormWithDocuments: React.FC<DogFormWithDocumentsProps> = ({ initialData
                   
                   <FormField
                     control={form.control}
-                    name="age"
+                    name="birthdate"
                     render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Alter</FormLabel>
-                        <FormControl>
-                          <Input placeholder="z.B. '3 Jahre'" {...field} />
-                        </FormControl>
+                      <FormItem className="flex flex-col">
+                        <FormLabel>Geburtsdatum</FormLabel>
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <FormControl>
+                              <Button
+                                variant="outline"
+                                className={`w-full pl-3 text-left font-normal ${
+                                  !field.value ? "text-muted-foreground" : ""
+                                }`}
+                              >
+                                {field.value ? (
+                                  format(field.value, "P", { locale: de })
+                                ) : (
+                                  <span>Datum auswählen</span>
+                                )}
+                              </Button>
+                            </FormControl>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-auto p-0" align="start">
+                            <Calendar
+                              mode="single"
+                              selected={field.value}
+                              onSelect={field.onChange}
+                              disabled={(date) =>
+                                date > new Date() || date < new Date("1900-01-01")
+                              }
+                              initialFocus
+                            />
+                          </PopoverContent>
+                        </Popover>
+                        <FormDescription>
+                          {field.value && `Alter: ${calculateAge(field.value)}`}
+                        </FormDescription>
                         <FormMessage />
                       </FormItem>
                     )}
