@@ -136,7 +136,9 @@ const DogFormWithDocuments: React.FC<DogFormWithDocumentsProps> = ({ initialData
   const onSubmit = (values: DogFormValues) => {
     const dogData = {
       ...values,
-      birthdate: values.birthdate.toISOString(),
+      birthdate: values.birthdate instanceof Date 
+        ? values.birthdate.toISOString() 
+        : values.birthdate,
       imageUrl: imagePreview || 'https://images.unsplash.com/photo-1543466835-00a7907e9de1',
     };
 
