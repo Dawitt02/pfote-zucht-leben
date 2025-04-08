@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -435,9 +434,9 @@ const DogFormWithDocuments: React.FC<DogFormWithDocumentsProps> = ({ initialData
           <TabsContent value="pedigree" className="space-y-4 pt-4">
             <Card>
               <CardHeader>
-                <CardTitle>Abstammung & Genetik</CardTitle>
+                <CardTitle>Abstammung</CardTitle>
                 <CardDescription>
-                  Informationen zur Abstammung und genetischen Daten.
+                  Informationen zur Abstammung des Hundes.
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -447,13 +446,6 @@ const DogFormWithDocuments: React.FC<DogFormWithDocumentsProps> = ({ initialData
                     category="pedigree"
                     onDocumentUpload={(doc) => handleDocumentUpload('pedigree', doc)}
                     documentInfo={documents['pedigree']?.name}
-                  />
-                  
-                  <DocumentUpload
-                    fieldLabel="Genetische Testergebnisse"
-                    category="genetic"
-                    onDocumentUpload={(doc) => handleDocumentUpload('genetic', doc)}
-                    documentInfo={documents['genetic']?.name}
                   />
                 </div>
               </CardContent>

@@ -38,9 +38,9 @@ const EditDog = () => {
   const formattedDog = {
     ...currentDog,
     // Ensure birthdate is handled as Date for the form
-    birthdate: currentDog.birthdate instanceof Date ? 
-      currentDog.birthdate : 
-      new Date(currentDog.birthdate)
+    birthdate: typeof currentDog.birthdate === 'string' ? 
+      new Date(currentDog.birthdate) : 
+      currentDog.birthdate
   };
 
   return (
@@ -59,7 +59,7 @@ const EditDog = () => {
         </div>
         
         <div className="bg-white rounded-lg shadow">
-          <DogFormWithDocuments initialData={formattedDog} mode="edit" />
+          <DogFormWithDocuments initialData={formattedDog as Dog} mode="edit" />
         </div>
       </div>
     </MobileContainer>
