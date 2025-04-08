@@ -510,6 +510,40 @@ const DogFormWithDocuments: React.FC<DogFormWithDocumentsProps> = ({ initialData
                       </FormItem>
                     )}
                   />
+                  
+                  <FormField
+                    control={form.control}
+                    name="healthStatus"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Gesundheitsstatus</FormLabel>
+                        <FormControl>
+                          <Textarea
+                            placeholder="Allgemeiner Gesundheitszustand"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={form.control}
+                    name="geneticTestResults"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Genetische Testergebnisse</FormLabel>
+                        <FormControl>
+                          <Textarea
+                            placeholder="Details zu genetischen Tests"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
                 </div>
               </CardContent>
             </Card>

@@ -382,8 +382,6 @@ const DogDetail = () => {
                     <CardTitle className="text-lg">Gesundheitsinformationen</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <p>Gesundheitsdaten für {dog.name} werden hier angezeigt, sobald sie hinzugefügt wurden.</p>
-                    
                     {dog.healthStatus && (
                       <div className="mt-4">
                         <h3 className="font-medium mb-2">Gesundheitsstatus</h3>
