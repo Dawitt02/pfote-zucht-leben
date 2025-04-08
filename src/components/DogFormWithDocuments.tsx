@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -50,7 +49,6 @@ const dogFormSchema = z.object({
   
   pedigree: z.string().optional(),
   geneticTestResults: z.string().optional(),
-  inbreedingCoefficient: z.string().optional(),
   healthStatus: z.string().optional(),
   vaccinationHistory: z.string().optional(),
   weight: z.string().optional(),
@@ -119,7 +117,6 @@ const DogFormWithDocuments: React.FC<DogFormWithDocumentsProps> = ({ initialData
         notes: dogData.notes,
         pedigree: dogData.pedigree,
         geneticTestResults: dogData.geneticTestResults,
-        inbreedingCoefficient: dogData.inbreedingCoefficient,
         healthStatus: dogData.healthStatus,
         vaccinationHistory: dogData.vaccinationHistory,
         weight: dogData.weight,
@@ -379,13 +376,6 @@ const DogFormWithDocuments: React.FC<DogFormWithDocumentsProps> = ({ initialData
                     category="genetic"
                     onDocumentUpload={(doc) => handleDocumentUpload('genetic', doc)}
                     documentInfo={documents['genetic']?.name}
-                  />
-                  
-                  <DocumentUpload
-                    fieldLabel="Inzuchtkoeffizient"
-                    category="inbreeding"
-                    onDocumentUpload={(doc) => handleDocumentUpload('inbreeding', doc)}
-                    documentInfo={documents['inbreeding']?.name}
                   />
                 </div>
               </CardContent>
