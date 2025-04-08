@@ -1,10 +1,9 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import * as z from 'zod';
-import { format, differenceInYears, differenceInMonths } from "date-fns";
+import { format } from "date-fns";
 import { de } from "date-fns/locale";
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -14,6 +13,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { useToast } from '@/hooks/use-toast';
 import DocumentUpload from './DocumentUpload';
 import { Dog, DogDocument, useDogs } from '@/context/DogContext';
+import { calculateAge } from '@/utils/dateUtils';
 import {
   Form,
   FormControl,
@@ -80,23 +80,6 @@ interface DogFormWithDocumentsProps {
   initialData?: Dog;
   mode: 'add' | 'edit';
 }
-
-const calculateAge = (birthdate: Date): string => {
-  if (!birthdate) return "";
-  
-  const today = new Date();
-  const years = differenceInYears(today, birthdate);
-  
-  if (years === 0) {
-    const months = differenceInMonths(today, birthdate);
-    return `${months} ${months === 1 ? 'Monat' : 'Monate'}`;
-  } else {
-    const monthsAfterYear = differenceInMonths(today, birthdate) % 12;
-    return monthsAfterYear > 0 
-      ? `${years} ${years === 1 ? 'Jahr' : 'Jahre'} und ${monthsAfterYear} ${monthsAfterYear === 1 ? 'Monat' : 'Monate'}`
-      : `${years} ${years === 1 ? 'Jahr' : 'Jahre'}`;
-  }
-};
 
 const DogFormWithDocuments: React.FC<DogFormWithDocumentsProps> = ({ initialData, mode }) => {
   const { addDog, updateDog, addDocumentToDog } = useDogs();

@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
 import { Heart, Calendar, Award } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { differenceInYears, differenceInMonths } from 'date-fns';
+import { calculateAge } from '@/utils/dateUtils';
 
 interface DogCardProps {
   id: string;
@@ -31,24 +31,6 @@ export function DogCard({
   onClick,
   className
 }: DogCardProps) {
-  const calculateAge = (birthdateStr: string): string => {
-    const birthdate = new Date(birthdateStr);
-    if (!birthdate || isNaN(birthdate.getTime())) return "";
-    
-    const today = new Date();
-    const years = differenceInYears(today, birthdate);
-    
-    if (years === 0) {
-      const months = differenceInMonths(today, birthdate);
-      return `${months} ${months === 1 ? 'Monat' : 'Monate'}`;
-    } else {
-      const monthsAfterYear = differenceInMonths(today, birthdate) % 12;
-      return monthsAfterYear > 0 
-        ? `${years} ${years === 1 ? 'Jahr' : 'Jahre'} und ${monthsAfterYear} ${monthsAfterYear === 1 ? 'Monat' : 'Monate'}`
-        : `${years} ${years === 1 ? 'Jahr' : 'Jahre'}`;
-    }
-  };
-
   return (
     <Link to={`/dogs/${id}`}>
       <Card 
