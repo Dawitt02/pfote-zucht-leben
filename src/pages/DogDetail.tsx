@@ -337,6 +337,13 @@ const DogDetail = () => {
                           <TableCell className="font-medium">Chip-Nr.</TableCell>
                           <TableCell>{dog?.chipNumber}</TableCell>
                         </TableRow>
+                        
+                        {dog?.registrationNumber && (
+                          <TableRow>
+                            <TableCell className="font-medium">Registrierungsnummer</TableCell>
+                            <TableCell>{dog.registrationNumber}</TableCell>
+                          </TableRow>
+                        )}
                       </TableBody>
                     </Table>
                   </CardContent>
