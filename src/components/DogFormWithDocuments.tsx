@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -24,6 +25,25 @@ import {
   FormMessage,
   FormFileInput,
 } from "@/components/ui/form";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@/components/ui/tabs";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 
 const dogFormSchema = z.object({
   name: z.string().min(2, { message: 'Name muss mindestens 2 Zeichen lang sein' }),
@@ -125,7 +145,12 @@ const DogFormWithDocuments: React.FC<DogFormWithDocumentsProps> = ({ initialData
 
     if (mode === 'add') {
       const newDog: Omit<Dog, 'id'> = {
-        ...dogData,
+        name: dogData.name,
+        breed: dogData.breed,
+        birthdate: dogData.birthdate,
+        gender: dogData.gender,
+        imageUrl: dogData.imageUrl,
+        breedingStatus: dogData.breedingStatus || '',
         achievements: [],
         documents: [],
         fullName: dogData.fullName || '',
