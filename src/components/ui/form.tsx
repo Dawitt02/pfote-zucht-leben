@@ -1,3 +1,4 @@
+
 import * as React from "react"
 import * as LabelPrimitive from "@radix-ui/react-label"
 import { Slot } from "@radix-ui/react-slot"
@@ -14,6 +15,9 @@ import { cn } from "@/lib/utils"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
 import { ImagePlus } from "lucide-react"
+
+// Define the Form component that was missing
+const Form = FormProvider
 
 type FormFieldContextValue<
   TFieldValues extends FieldValues = FieldValues,

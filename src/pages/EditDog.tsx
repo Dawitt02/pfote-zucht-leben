@@ -6,7 +6,6 @@ import { ArrowLeft } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { useDogs } from '@/context/DogContext';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import DogFormWithDocuments from '@/components/DogFormWithDocuments';
 import MobileContainer from '@/components/MobileContainer';
 
@@ -20,7 +19,7 @@ const EditDog = () => {
   
   useEffect(() => {
     if (dogId && !currentDog) {
-      toast.error("Hund nicht gefunden");
+      toast("Hund nicht gefunden");
       navigate('/dogs');
     }
   }, [currentDog, navigate, dogId]);

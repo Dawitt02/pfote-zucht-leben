@@ -133,7 +133,9 @@ const DogFormWithDocuments: React.FC<DogFormWithDocumentsProps> = ({ initialData
   }, [initialData, form]);
 
   const onSubmit = (values: DogFormValues) => {
-    const birthdateString = values.birthdate ? values.birthdate.toISOString() : new Date().toISOString();
+    const birthdateString = values.birthdate instanceof Date 
+      ? values.birthdate.toISOString() 
+      : new Date().toISOString();
     
     if (mode === 'add') {
       const newDog: Omit<Dog, 'id'> = {
@@ -164,8 +166,7 @@ const DogFormWithDocuments: React.FC<DogFormWithDocumentsProps> = ({ initialData
       };
       
       addDog(newDog);
-      toast({
-        title: "Hund hinzugefügt",
+      toast("Hund hinzugefügt", {
         description: `${values.name} wurde erfolgreich hinzugefügt.`,
       });
     } else if (mode === 'edit' && initialData) {
@@ -180,8 +181,7 @@ const DogFormWithDocuments: React.FC<DogFormWithDocumentsProps> = ({ initialData
         documents: initialData.documents || []
       });
       
-      toast({
-        title: "Hund aktualisiert",
+      toast("Hund aktualisiert", {
         description: `${values.name} wurde erfolgreich aktualisiert.`,
       });
     }
