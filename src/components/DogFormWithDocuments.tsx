@@ -146,7 +146,9 @@ const DogFormWithDocuments: React.FC<DogFormWithDocumentsProps> = ({ initialData
       const newDog: Omit<Dog, 'id'> = {
         name: dogData.name,
         breed: dogData.breed,
-        birthdate: dogData.birthdate,
+        birthdate: typeof dogData.birthdate === 'string' 
+          ? dogData.birthdate 
+          : dogData.birthdate.toISOString(),
         gender: dogData.gender,
         imageUrl: dogData.imageUrl,
         breedingStatus: dogData.breedingStatus || '',
@@ -181,6 +183,9 @@ const DogFormWithDocuments: React.FC<DogFormWithDocumentsProps> = ({ initialData
       updateDog({ 
         ...initialData, 
         ...dogData,
+        birthdate: typeof dogData.birthdate === 'string' 
+          ? dogData.birthdate 
+          : dogData.birthdate.toISOString(),
         achievements,
         documents: initialData.documents || []
       });
