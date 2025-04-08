@@ -81,6 +81,7 @@ import {
 } from "@/components/ui/form";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useDogs } from '@/context/DogContext';
+import DogBreedingStats from '@/components/breeding/DogBreedingStats';
 
 const DogDetail = () => {
   const { dogId } = useParams<{ dogId: string }>();
@@ -371,6 +372,8 @@ const DogDetail = () => {
               </TabsContent>
               
               <TabsContent value="breeding" className="space-y-4 py-4">
+                {dog?.gender === 'female' && <DogBreedingStats dogId={dogId || ''} />}
+                
                 <Card>
                   <CardHeader>
                     <CardTitle className="text-lg">Zuchtstatus</CardTitle>
@@ -384,6 +387,25 @@ const DogDetail = () => {
                     </div>
                     
                     <div className="space-y-4">
+                      {dog?.gender === 'female' && (
+                        <div className="flex items-center mb-4">
+                          <Calendar className="h-5 w-5 mr-2 text-pink-500" />
+                          <div>
+                            <span className="text-gray-600 mr-2">Nächste Läufigkeit:</span>
+                            {(() => {
+                              const nextHeat = dog && dog.id ? getPredictedNextHeat(dog.id) : null;
+                              return nextHeat ? (
+                                <span className="font-medium">
+                                  {format(nextHeat, 'dd.MM.yyyy', { locale: de })}
+                                </span>
+                              ) : (
+                                <span className="text-gray-400">nicht verfügbar</span>
+                              );
+                            })()}
+                          </div>
+                        </div>
+                      )}
+                      
                       <p className="text-sm text-gray-500">
                         Hier werden zukünftig Informationen zu Würfen, Zuchtplanungen und Zuchtwerten angezeigt.
                       </p>
