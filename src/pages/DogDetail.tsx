@@ -316,10 +316,18 @@ const DogDetail = () => {
                   <CardContent>
                     <Table>
                       <TableBody>
+                        {dog?.fullName && (
+                          <TableRow>
+                            <TableCell className="font-medium">Vollständiger Name</TableCell>
+                            <TableCell>{dog.fullName}</TableCell>
+                          </TableRow>
+                        )}
+                        
                         <TableRow>
-                          <TableCell className="font-medium w-1/3">Rasse</TableCell>
+                          <TableCell className="font-medium">Rasse</TableCell>
                           <TableCell>{dog?.breed}</TableCell>
                         </TableRow>
+                        
                         <TableRow>
                           <TableCell className="font-medium">Geschlecht</TableCell>
                           <TableCell>{dog?.gender === 'male' ? 'männlich' : 'weiblich'}</TableCell>
