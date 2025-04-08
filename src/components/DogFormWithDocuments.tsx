@@ -47,7 +47,7 @@ import {
 const dogFormSchema = z.object({
   name: z.string().min(2, { message: 'Name muss mindestens 2 Zeichen lang sein' }),
   breed: z.string().min(2, { message: 'Rasse muss mindestens 2 Zeichen lang sein' }),
-  birthdate: z.date({
+  birthdate: z.union([z.date(), z.string()], {
     required_error: "Bitte geben Sie das Geburtsdatum ein",
   }),
   gender: z.enum(['male', 'female']),
