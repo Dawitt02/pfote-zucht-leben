@@ -47,7 +47,7 @@ import {
 const dogFormSchema = z.object({
   name: z.string().min(2, { message: 'Name muss mindestens 2 Zeichen lang sein' }),
   breed: z.string().min(2, { message: 'Rasse muss mindestens 2 Zeichen lang sein' }),
-  birthdate: z.union([z.date(), z.string()], {
+  birthdate: z.date({
     required_error: "Bitte geben Sie das Geburtsdatum ein",
   }),
   gender: z.enum(['male', 'female']),
@@ -279,7 +279,7 @@ const DogFormWithDocuments: React.FC<DogFormWithDocumentsProps> = ({ initialData
                                 }`}
                               >
                                 {field.value ? (
-                                  format(field.value, "P", { locale: de })
+                                  format(new Date(field.value), "P", { locale: de })
                                 ) : (
                                   <span>Datum auswählen</span>
                                 )}
@@ -289,7 +289,7 @@ const DogFormWithDocuments: React.FC<DogFormWithDocumentsProps> = ({ initialData
                           <PopoverContent className="w-auto p-0" align="start">
                             <Calendar
                               mode="single"
-                              selected={field.value}
+                              selected={field.value instanceof Date ? field.value : new Date(field.value)}
                               onSelect={field.onChange}
                               disabled={(date) =>
                                 date > new Date() || date < new Date("1900-01-01")
