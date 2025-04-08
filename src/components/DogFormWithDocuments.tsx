@@ -80,7 +80,6 @@ interface DogFormWithDocumentsProps {
   mode: 'add' | 'edit';
 }
 
-// Helper function to calculate age
 const calculateAge = (birthdate: Date): string => {
   if (!birthdate) return "";
   
@@ -105,7 +104,6 @@ const DogFormWithDocuments: React.FC<DogFormWithDocumentsProps> = ({ initialData
   const [documents, setDocuments] = useState<Record<string, Omit<DogDocument, 'id'>>>({});
   const [imagePreview, setImagePreview] = useState<string | undefined>(initialData?.imageUrl);
 
-  // Convert stored age string to a Date if needed for initial values
   let initialBirthdate: Date | undefined = undefined;
   if (initialData?.birthdate) {
     initialBirthdate = new Date(initialData.birthdate);
@@ -117,22 +115,22 @@ const DogFormWithDocuments: React.FC<DogFormWithDocumentsProps> = ({ initialData
     birthdate: initialBirthdate || new Date(),
     gender: initialData?.gender || 'male',
     breedingStatus: initialData?.breedingStatus || '',
-  fullName: initialData?.fullName || '',
-  registrationNumber: initialData?.registrationNumber || '',
-  chipNumber: initialData?.chipNumber || '',
-  notes: initialData?.notes || '',
-  pedigree: initialData?.pedigree || '',
-  geneticTestResults: initialData?.geneticTestResults || '',
-  healthStatus: initialData?.healthStatus || '',
-  vaccinationHistory: initialData?.vaccinationHistory || '',
-  weight: initialData?.weight || '',
-  size: initialData?.size || '',
-  cycleInformation: initialData?.cycleInformation || '',
-  breedingHistory: initialData?.breedingHistory || '',
-  litterInformation: initialData?.litterInformation || '',
-  breedingRestrictions: initialData?.breedingRestrictions || '',
-  exhibitionResults: initialData?.exhibitionResults || '',
-  temperamentAssessment: initialData?.temperamentAssessment || '',
+    fullName: initialData?.fullName || '',
+    registrationNumber: initialData?.registrationNumber || '',
+    chipNumber: initialData?.chipNumber || '',
+    notes: initialData?.notes || '',
+    pedigree: initialData?.pedigree || '',
+    geneticTestResults: initialData?.geneticTestResults || '',
+    healthStatus: initialData?.healthStatus || '',
+    vaccinationHistory: initialData?.vaccinationHistory || '',
+    weight: initialData?.weight || '',
+    size: initialData?.size || '',
+    cycleInformation: initialData?.cycleInformation || '',
+    breedingHistory: initialData?.breedingHistory || '',
+    litterInformation: initialData?.litterInformation || '',
+    breedingRestrictions: initialData?.breedingRestrictions || '',
+    exhibitionResults: initialData?.exhibitionResults || '',
+    temperamentAssessment: initialData?.temperamentAssessment || '',
   };
 
   const form = useForm<DogFormValues>({
@@ -142,7 +140,6 @@ const DogFormWithDocuments: React.FC<DogFormWithDocumentsProps> = ({ initialData
 
   useEffect(() => {
     if (initialData) {
-      // When initialData changes, update form with converted birthdate
       const formValues = {...initialData};
       if (initialData.birthdate) {
         formValues.birthdate = new Date(initialData.birthdate);
@@ -155,7 +152,6 @@ const DogFormWithDocuments: React.FC<DogFormWithDocumentsProps> = ({ initialData
   const onSubmit = (values: DogFormValues) => {
     const dogData = {
       ...values,
-      // Store the ISO string of birthdate for consistent storage
       birthdate: values.birthdate.toISOString(),
       imageUrl: imagePreview || 'https://images.unsplash.com/photo-1543466835-00a7907e9de1',
     };
@@ -193,7 +189,6 @@ const DogFormWithDocuments: React.FC<DogFormWithDocumentsProps> = ({ initialData
         description: `${values.name} wurde erfolgreich hinzugefügt.`,
       });
     } else if (mode === 'edit' && initialData) {
-      // Ensure we maintain the original achievements if they exist
       const achievements = initialData.achievements || [];
       
       updateDog({ 

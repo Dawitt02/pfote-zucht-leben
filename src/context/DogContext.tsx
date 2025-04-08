@@ -74,7 +74,7 @@ export interface Dog {
   id: string;
   name: string;
   breed: string;
-  age: string;
+  birthdate: string; // Changed from age to birthdate
   gender: 'male' | 'female';
   imageUrl: string;
   breedingStatus?: string;
@@ -136,7 +136,7 @@ const initialDogs: Dog[] = [
     id: '1',
     name: 'Luna',
     breed: 'Golden Retriever',
-    age: '3 Jahre',
+    birthdate: '2022-01-15', // Use ISO string format for consistency
     gender: 'female',
     imageUrl: 'https://images.unsplash.com/photo-1552053831-71594a27632d?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80',
     breedingStatus: 'Zuchttauglich',
@@ -146,7 +146,7 @@ const initialDogs: Dog[] = [
     id: '2',
     name: 'Max',
     breed: 'Deutscher Schäferhund',
-    age: '4 Jahre',
+    birthdate: '2021-04-10',
     gender: 'male',
     imageUrl: 'https://images.unsplash.com/photo-1589941013453-ec89f33b5e95?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80',
     breedingStatus: 'Aktiv',
@@ -156,7 +156,7 @@ const initialDogs: Dog[] = [
     id: '3',
     name: 'Bella',
     breed: 'Labrador Retriever',
-    age: '2 Jahre',
+    birthdate: '2023-01-20',
     gender: 'female',
     imageUrl: 'https://images.unsplash.com/photo-1591769225440-811ad7d6eab2?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80',
     breedingStatus: 'In Vorbereitung'
@@ -165,7 +165,7 @@ const initialDogs: Dog[] = [
     id: '4',
     name: 'Rocky',
     breed: 'Boxer',
-    age: '5 Jahre',
+    birthdate: '2020-01-10',
     gender: 'male',
     imageUrl: 'https://images.unsplash.com/photo-1535930891776-0c2dfb7fda1a?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80',
     breedingStatus: 'Ruhend',
