@@ -399,18 +399,32 @@ const DogFormWithDocuments: React.FC<DogFormWithDocumentsProps> = ({ initialData
                     )}
                   />
                   
-                  <DocumentUpload
-                    fieldLabel="Registrierungsnummer"
-                    category="registration"
-                    onDocumentUpload={(doc) => handleDocumentUpload('registration', doc)}
-                    documentInfo={documents['registration']?.name}
+                  <FormField
+                    control={form.control}
+                    name="registrationNumber"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Registrierungsnummer</FormLabel>
+                        <FormControl>
+                          <Input placeholder="z.B. 'VDH123456'" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
                   />
                   
-                  <DocumentUpload
-                    fieldLabel="Chipnummer"
-                    category="chip"
-                    onDocumentUpload={(doc) => handleDocumentUpload('chip', doc)}
-                    documentInfo={documents['chip']?.name}
+                  <FormField
+                    control={form.control}
+                    name="chipNumber"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Chipnummer</FormLabel>
+                        <FormControl>
+                          <Input placeholder="z.B. '276098106123456'" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
                   />
                 </div>
               </CardContent>
