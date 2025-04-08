@@ -134,11 +134,11 @@ const DogFormWithDocuments: React.FC<DogFormWithDocumentsProps> = ({ initialData
   }, [initialData, form]);
 
   const onSubmit = (values: DogFormValues) => {
+    const birthdateString = values.birthdate.toISOString();
+    
     const dogData = {
       ...values,
-      birthdate: values.birthdate instanceof Date 
-        ? values.birthdate.toISOString() 
-        : values.birthdate,
+      birthdate: birthdateString,
       imageUrl: imagePreview || 'https://images.unsplash.com/photo-1543466835-00a7907e9de1',
     };
 
@@ -146,9 +146,7 @@ const DogFormWithDocuments: React.FC<DogFormWithDocumentsProps> = ({ initialData
       const newDog: Omit<Dog, 'id'> = {
         name: dogData.name,
         breed: dogData.breed,
-        birthdate: typeof dogData.birthdate === 'string' 
-          ? dogData.birthdate 
-          : dogData.birthdate.toISOString(),
+        birthdate: birthdateString,
         gender: dogData.gender,
         imageUrl: dogData.imageUrl,
         breedingStatus: dogData.breedingStatus || '',
@@ -183,9 +181,7 @@ const DogFormWithDocuments: React.FC<DogFormWithDocumentsProps> = ({ initialData
       updateDog({ 
         ...initialData, 
         ...dogData,
-        birthdate: typeof dogData.birthdate === 'string' 
-          ? dogData.birthdate 
-          : dogData.birthdate.toISOString(),
+        birthdate: birthdateString,
         achievements,
         documents: initialData.documents || []
       });
