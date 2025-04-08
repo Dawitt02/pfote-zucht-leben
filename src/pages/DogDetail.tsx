@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { 
   ArrowLeft, 
@@ -19,7 +19,7 @@ import {
   Upload,
   Save
 } from 'lucide-react';
-import { format } from 'date-fns';
+import { format, differenceInYears, differenceInMonths } from 'date-fns';
 import { de } from 'date-fns/locale';
 import { Button } from '@/components/ui/button';
 import Navbar from '@/components/Navbar';
@@ -98,6 +98,26 @@ const DogDetail = () => {
   const { dogs, getPredictedNextHeat } = useDogs();
 
   const dog = dogs.find(dog => dog.id === dogId);
+
+  const calculateAge = (birthdateStr: string | undefined): string => {
+    if (!birthdateStr) return "";
+    
+    const birthdate = new Date(birthdateStr);
+    if (isNaN(birthdate.getTime())) return "";
+    
+    const today = new Date();
+    const years = differenceInYears(today, birthdate);
+    
+    if (years === 0) {
+      const months = differenceInMonths(today, birthdate);
+      return `${months} ${months === 1 ? 'Monat' : 'Monate'}`;
+    } else {
+      const monthsAfterYear = differenceInMonths(today, birthdate) % 12;
+      return monthsAfterYear > 0 
+        ? `${years} ${years === 1 ? 'Jahr' : 'Jahre'} und ${monthsAfterYear} ${monthsAfterYear === 1 ? 'Monat' : 'Monate'}`
+        : `${years} ${years === 1 ? 'Jahr' : 'Jahre'}`;
+    }
+  };
 
   if (!dog) {
     return (
@@ -237,13 +257,13 @@ const DogDetail = () => {
                 <div className="grid grid-cols-2 gap-4 mb-3">
                   <div className="flex items-center">
                     <Calendar className="h-4 w-4 mr-2 text-zucht-blue" />
-                    <span>Alter: {dog?.age}</span>
+                    <span>Alter: {calculateAge(dog?.birthdate)}</span>
                   </div>
                   
-                  {dog?.age && (
+                  {dog?.birthdate && (
                     <div className="flex items-center">
                       <Calendar className="h-4 w-4 mr-2 text-zucht-blue" />
-                      <span>Alter: {dog?.age}</span>
+                      <span>Geburtsdatum: {format(new Date(dog.birthdate), 'dd.MM.yyyy', { locale: de })}</span>
                     </div>
                   )}
                   
@@ -311,7 +331,7 @@ const DogDetail = () => {
                         </TableRow>
                         <TableRow>
                           <TableCell className="font-medium">Alter</TableCell>
-                          <TableCell>{dog?.age}</TableCell>
+                          <TableCell>{calculateAge(dog?.birthdate)}</TableCell>
                         </TableRow>
                         <TableRow>
                           <TableCell className="font-medium">Chip-Nr.</TableCell>

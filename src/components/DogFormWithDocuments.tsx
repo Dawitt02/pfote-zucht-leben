@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -144,7 +145,7 @@ const DogFormWithDocuments: React.FC<DogFormWithDocumentsProps> = ({ initialData
       if (initialData.birthdate) {
         formValues.birthdate = new Date(initialData.birthdate);
       }
-      form.reset(formValues);
+      form.reset(formValues as any);
       setImagePreview(initialData.imageUrl);
     }
   }, [initialData, form]);

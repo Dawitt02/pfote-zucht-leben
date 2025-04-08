@@ -1,5 +1,5 @@
-
-import React, { useState } from 'react';
+import React from 'react';
+import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { 
   ArrowLeft, 
@@ -46,6 +46,7 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import Navbar from '@/components/Navbar';
+import { calculateAge } from '@/utils/dateUtils';
 
 const LitterDetail = () => {
   const { litterId } = useParams<{ litterId: string }>();
@@ -139,7 +140,7 @@ const LitterDetail = () => {
   const females = litter.females || puppies.filter(p => p.gender === 'female').length || 0;
   
   return (
-    <div className="flex flex-col min-h-screen bg-zucht-cream">
+    <div className="flex flex-col h-screen">
       <main className="flex-1 overflow-hidden pb-24">
         <ScrollArea className="h-[calc(100vh-64px)]">
           <div className="container mx-auto px-4 py-6 max-w-5xl">
@@ -651,7 +652,7 @@ const LitterDetail = () => {
                               <div className="space-y-2">
                                 <div className="grid grid-cols-3 gap-2">
                                   <div className="col-span-1 text-sm text-muted-foreground">Alter:</div>
-                                  <div className="col-span-2 text-sm">{mother.age}</div>
+                                  <div className="col-span-2 text-sm">{calculateAge(mother.birthdate)}</div>
                                 </div>
                                 
                                 <div className="grid grid-cols-3 gap-2">
@@ -725,7 +726,7 @@ const LitterDetail = () => {
                                   <div className="space-y-2">
                                     <div className="grid grid-cols-3 gap-2">
                                       <div className="col-span-1 text-sm text-muted-foreground">Alter:</div>
-                                      <div className="col-span-2 text-sm">{father.age}</div>
+                                      <div className="col-span-2 text-sm">{calculateAge(father.birthdate)}</div>
                                     </div>
                                     
                                     <div className="grid grid-cols-3 gap-2">

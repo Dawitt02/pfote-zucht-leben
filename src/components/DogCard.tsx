@@ -4,12 +4,13 @@ import { Link } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
 import { Heart, Calendar, Award } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { differenceInYears, differenceInMonths } from 'date-fns';
 
 interface DogCardProps {
   id: string;
   name: string;
   breed: string;
-  age: string;
+  birthdate: string;
   gender: 'male' | 'female';
   imageUrl: string;
   breedingStatus?: string;
@@ -22,7 +23,7 @@ export function DogCard({
   id,
   name,
   breed,
-  age,
+  birthdate,
   gender,
   imageUrl,
   breedingStatus,
@@ -30,6 +31,24 @@ export function DogCard({
   onClick,
   className
 }: DogCardProps) {
+  const calculateAge = (birthdateStr: string): string => {
+    const birthdate = new Date(birthdateStr);
+    if (!birthdate || isNaN(birthdate.getTime())) return "";
+    
+    const today = new Date();
+    const years = differenceInYears(today, birthdate);
+    
+    if (years === 0) {
+      const months = differenceInMonths(today, birthdate);
+      return `${months} ${months === 1 ? 'Monat' : 'Monate'}`;
+    } else {
+      const monthsAfterYear = differenceInMonths(today, birthdate) % 12;
+      return monthsAfterYear > 0 
+        ? `${years} ${years === 1 ? 'Jahr' : 'Jahre'} und ${monthsAfterYear} ${monthsAfterYear === 1 ? 'Monat' : 'Monate'}`
+        : `${years} ${years === 1 ? 'Jahr' : 'Jahre'}`;
+    }
+  };
+
   return (
     <Link to={`/dogs/${id}`}>
       <Card 
@@ -61,7 +80,7 @@ export function DogCard({
           <div className="flex items-center gap-4 text-sm mb-2">
             <div className="flex items-center">
               <Calendar className="h-4 w-4 mr-1 text-zucht-blue" />
-              <span>{age}</span>
+              <span>{calculateAge(birthdate)}</span>
             </div>
             
             {breedingStatus && (
