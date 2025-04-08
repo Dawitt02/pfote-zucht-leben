@@ -19,6 +19,8 @@ import {
   Upload,
   Save
 } from 'lucide-react';
+import { format } from 'date-fns';
+import { de } from 'date-fns/locale';
 import { Button } from '@/components/ui/button';
 import Navbar from '@/components/Navbar';
 import {
@@ -93,7 +95,7 @@ const DogDetail = () => {
   const [uploadSubCategory, setUploadSubCategory] = useState('pedigree');
   const [documentName, setDocumentName] = useState('');
   const { toast } = useToast();
-  const { dogs } = useDogs();
+  const { dogs, getPredictedNextHeat } = useDogs();
 
   const dog = dogs.find(dog => dog.id === dogId);
 
