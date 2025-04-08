@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -59,7 +60,6 @@ const dogFormSchema = z.object({
   notes: z.string().optional(),
   
   pedigree: z.string().optional(),
-  geneticTestResults: z.string().optional(),
   healthStatus: z.string().optional(),
   vaccinationHistory: z.string().optional(),
   weight: z.string().optional(),
@@ -72,6 +72,7 @@ const dogFormSchema = z.object({
   
   exhibitionResults: z.string().optional(),
   temperamentAssessment: z.string().optional(),
+  geneticTestResults: z.string().optional(),
 });
 
 type DogFormValues = z.infer<typeof dogFormSchema>;
@@ -483,6 +484,13 @@ const DogFormWithDocuments: React.FC<DogFormWithDocumentsProps> = ({ initialData
                     documentInfo={documents['vaccination']?.name}
                   />
                   
+                  <DocumentUpload
+                    fieldLabel="Genetische Testergebnisse"
+                    category="genetic"
+                    onDocumentUpload={(doc) => handleDocumentUpload('genetic', doc)}
+                    documentInfo={documents['genetic']?.name}
+                  />
+                  
                   <FormField
                     control={form.control}
                     name="weight"
@@ -533,10 +541,10 @@ const DogFormWithDocuments: React.FC<DogFormWithDocumentsProps> = ({ initialData
                     name="geneticTestResults"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Genetische Testergebnisse</FormLabel>
+                        <FormLabel>Notizen zu genetischen Tests</FormLabel>
                         <FormControl>
                           <Textarea
-                            placeholder="Details zu genetischen Tests"
+                            placeholder="Zusätzliche Notizen zu genetischen Tests"
                             {...field}
                           />
                         </FormControl>

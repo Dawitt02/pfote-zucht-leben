@@ -34,6 +34,15 @@ const EditDog = () => {
     );
   }
 
+  // Make sure currentDog with proper date is passed to avoid TypeScript errors
+  const formattedDog = {
+    ...currentDog,
+    // Ensure birthdate is handled as Date for the form
+    birthdate: currentDog.birthdate instanceof Date ? 
+      currentDog.birthdate : 
+      new Date(currentDog.birthdate)
+  };
+
   return (
     <MobileContainer>
       <div className="container mx-auto px-4 py-6">
@@ -50,7 +59,7 @@ const EditDog = () => {
         </div>
         
         <div className="bg-white rounded-lg shadow">
-          <DogFormWithDocuments initialData={currentDog} mode="edit" />
+          <DogFormWithDocuments initialData={formattedDog} mode="edit" />
         </div>
       </div>
     </MobileContainer>
