@@ -297,7 +297,7 @@ const DogFormWithDocuments: React.FC<DogFormWithDocumentsProps> = ({ initialData
                           </PopoverContent>
                         </Popover>
                         <FormDescription>
-                          {field.value && `Alter: ${calculateAge(field.value)}`}
+                          {field.value && `Alter: ${calculateAge(field.value.toISOString())}`}
                         </FormDescription>
                         <FormMessage />
                       </FormItem>
