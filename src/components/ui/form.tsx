@@ -12,8 +12,8 @@ import {
 
 import { cn } from "@/lib/utils"
 import { Label } from "@/components/ui/label"
-
-const Form = FormProvider
+import { Button } from "@/components/ui/button"
+import { ImagePlus } from "lucide-react"
 
 type FormFieldContextValue<
   TFieldValues extends FieldValues = FieldValues,
@@ -170,7 +170,11 @@ const FormFileInput = React.forwardRef<
     onImageChange?: (dataUrl: string) => void;
     previewUrl?: string;
   }
->(({ className, onImageChange, previewUrl, ...props }, ref) => {
+>(({ className, onImageChange, previewUrl, id, ...props }, ref) => {
+  const inputRef = React.useRef<HTMLInputElement>(null);
+  const { formItemId } = useFormField();
+  const uniqueId = id || formItemId || React.useId();
+  
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file && onImageChange) {
@@ -185,22 +189,54 @@ const FormFileInput = React.forwardRef<
     }
   };
 
+  const triggerFileSelect = () => {
+    inputRef.current?.click();
+  };
+
   return (
     <div className={cn("relative", className)}>
       {previewUrl && (
-        <div className="relative mb-2 overflow-hidden rounded-md">
+        <div className="relative mb-2 overflow-hidden rounded-md group">
           <img 
             src={previewUrl} 
             alt="Preview" 
-            className="w-full h-auto object-cover" 
+            className="w-full h-auto object-cover rounded-md max-h-[200px]" 
           />
+          <div 
+            className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center cursor-pointer"
+            onClick={triggerFileSelect}
+          >
+            <p className="text-white text-sm font-medium">Bild ändern</p>
+          </div>
         </div>
       )}
+      
+      {!previewUrl && (
+        <Button 
+          type="button" 
+          variant="outline" 
+          className="w-full py-8 border-dashed flex flex-col items-center gap-2"
+          onClick={triggerFileSelect}
+        >
+          <ImagePlus className="h-8 w-8 text-muted-foreground" />
+          <span className="text-sm text-muted-foreground">Bild auswählen</span>
+        </Button>
+      )}
+      
       <input
         type="file"
-        ref={ref}
+        id={uniqueId}
+        ref={(e) => {
+          if (typeof ref === 'function') {
+            ref(e);
+          } else if (ref) {
+            ref.current = e;
+          }
+          inputRef.current = e;
+        }}
         onChange={handleChange}
         className="hidden"
+        accept="image/*"
         {...props}
       />
     </div>

@@ -10,7 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Calendar } from '@/components/ui/calendar';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from "sonner";
 import DocumentUpload from './DocumentUpload';
 import { Dog, DogDocument, useDogs } from '@/context/DogContext';
 import { calculateAge } from '@/utils/dateUtils';
@@ -84,7 +84,6 @@ interface DogFormWithDocumentsProps {
 const DogFormWithDocuments: React.FC<DogFormWithDocumentsProps> = ({ initialData, mode }) => {
   const { addDog, updateDog, addDocumentToDog } = useDogs();
   const navigate = useNavigate();
-  const { toast } = useToast();
   const [documents, setDocuments] = useState<Record<string, Omit<DogDocument, 'id'>>>({});
   const [imagePreview, setImagePreview] = useState<string | undefined>(initialData?.imageUrl);
 
@@ -134,40 +133,34 @@ const DogFormWithDocuments: React.FC<DogFormWithDocumentsProps> = ({ initialData
   }, [initialData, form]);
 
   const onSubmit = (values: DogFormValues) => {
-    const birthdateString = values.birthdate.toISOString();
+    const birthdateString = values.birthdate ? values.birthdate.toISOString() : new Date().toISOString();
     
-    const dogData = {
-      ...values,
-      birthdate: birthdateString,
-      imageUrl: imagePreview || 'https://images.unsplash.com/photo-1543466835-00a7907e9de1',
-    };
-
     if (mode === 'add') {
       const newDog: Omit<Dog, 'id'> = {
-        name: dogData.name,
-        breed: dogData.breed,
+        name: values.name,
+        breed: values.breed,
         birthdate: birthdateString,
-        gender: dogData.gender,
-        imageUrl: dogData.imageUrl,
-        breedingStatus: dogData.breedingStatus || '',
+        gender: values.gender,
+        imageUrl: imagePreview || 'https://images.unsplash.com/photo-1543466835-00a7907e9de1',
+        breedingStatus: values.breedingStatus || '',
         achievements: [],
         documents: [],
-        fullName: dogData.fullName || '',
-        registrationNumber: dogData.registrationNumber || '',
-        chipNumber: dogData.chipNumber || '',
-        notes: dogData.notes || '',
-        pedigree: dogData.pedigree || '',
-        geneticTestResults: dogData.geneticTestResults || '',
-        healthStatus: dogData.healthStatus || '',
-        vaccinationHistory: dogData.vaccinationHistory || '',
-        weight: dogData.weight || '',
-        size: dogData.size || '',
-        cycleInformation: dogData.cycleInformation || '',
-        breedingHistory: dogData.breedingHistory || '',
-        litterInformation: dogData.litterInformation || '',
-        breedingRestrictions: dogData.breedingRestrictions || '',
-        exhibitionResults: dogData.exhibitionResults || '',
-        temperamentAssessment: dogData.temperamentAssessment || '',
+        fullName: values.fullName || '',
+        registrationNumber: values.registrationNumber || '',
+        chipNumber: values.chipNumber || '',
+        notes: values.notes || '',
+        pedigree: values.pedigree || '',
+        geneticTestResults: values.geneticTestResults || '',
+        healthStatus: values.healthStatus || '',
+        vaccinationHistory: values.vaccinationHistory || '',
+        weight: values.weight || '',
+        size: values.size || '',
+        cycleInformation: values.cycleInformation || '',
+        breedingHistory: values.breedingHistory || '',
+        litterInformation: values.litterInformation || '',
+        breedingRestrictions: values.breedingRestrictions || '',
+        exhibitionResults: values.exhibitionResults || '',
+        temperamentAssessment: values.temperamentAssessment || '',
       };
       
       addDog(newDog);
@@ -180,8 +173,9 @@ const DogFormWithDocuments: React.FC<DogFormWithDocumentsProps> = ({ initialData
       
       updateDog({ 
         ...initialData, 
-        ...dogData,
+        ...values,
         birthdate: birthdateString,
+        imageUrl: imagePreview || initialData.imageUrl,
         achievements,
         documents: initialData.documents || []
       });
@@ -301,7 +295,7 @@ const DogFormWithDocuments: React.FC<DogFormWithDocumentsProps> = ({ initialData
                           </PopoverContent>
                         </Popover>
                         <FormDescription>
-                          {field.value && `Alter: ${calculateAge(field.value)}`}
+                          {field.value && `Alter: ${calculateAge(field.value instanceof Date ? field.value : new Date(field.value))}`}
                         </FormDescription>
                         <FormMessage />
                       </FormItem>

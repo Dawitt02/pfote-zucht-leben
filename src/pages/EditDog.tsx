@@ -16,14 +16,14 @@ const EditDog = () => {
   const { dogs } = useDogs();
   
   // Find the current dog to edit
-  const currentDog = dogs.find(dog => dog.id === dogId);
+  const currentDog = dogId ? dogs.find(dog => dog.id === dogId) : undefined;
   
   useEffect(() => {
-    if (!currentDog) {
+    if (dogId && !currentDog) {
       toast.error("Hund nicht gefunden");
       navigate('/dogs');
     }
-  }, [currentDog, navigate]);
+  }, [currentDog, navigate, dogId]);
 
   if (!currentDog) {
     return (
