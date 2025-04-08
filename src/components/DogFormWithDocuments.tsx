@@ -24,25 +24,6 @@ import {
   FormMessage,
   FormFileInput,
 } from "@/components/ui/form";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@/components/ui/tabs";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
 
 const dogFormSchema = z.object({
   name: z.string().min(2, { message: 'Name muss mindestens 2 Zeichen lang sein' }),
@@ -144,29 +125,25 @@ const DogFormWithDocuments: React.FC<DogFormWithDocumentsProps> = ({ initialData
 
     if (mode === 'add') {
       const newDog: Omit<Dog, 'id'> = {
-        name: dogData.name,
-        breed: dogData.breed,
-        birthdate: dogData.birthdate,
-        gender: dogData.gender,
-        imageUrl: dogData.imageUrl,
-        breedingStatus: dogData.breedingStatus || '',
-        fullName: dogData.fullName,
-        registrationNumber: dogData.registrationNumber,
-        chipNumber: dogData.chipNumber,
-        notes: dogData.notes,
-        pedigree: dogData.pedigree,
-        geneticTestResults: dogData.geneticTestResults,
-        healthStatus: dogData.healthStatus,
-        vaccinationHistory: dogData.vaccinationHistory,
-        weight: dogData.weight,
-        size: dogData.size,
-        cycleInformation: dogData.cycleInformation,
-        breedingHistory: dogData.breedingHistory,
-        litterInformation: dogData.litterInformation,
-        breedingRestrictions: dogData.breedingRestrictions,
-        exhibitionResults: dogData.exhibitionResults,
-        temperamentAssessment: dogData.temperamentAssessment,
+        ...dogData,
         achievements: [],
+        documents: [],
+        fullName: dogData.fullName || '',
+        registrationNumber: dogData.registrationNumber || '',
+        chipNumber: dogData.chipNumber || '',
+        notes: dogData.notes || '',
+        pedigree: dogData.pedigree || '',
+        geneticTestResults: dogData.geneticTestResults || '',
+        healthStatus: dogData.healthStatus || '',
+        vaccinationHistory: dogData.vaccinationHistory || '',
+        weight: dogData.weight || '',
+        size: dogData.size || '',
+        cycleInformation: dogData.cycleInformation || '',
+        breedingHistory: dogData.breedingHistory || '',
+        litterInformation: dogData.litterInformation || '',
+        breedingRestrictions: dogData.breedingRestrictions || '',
+        exhibitionResults: dogData.exhibitionResults || '',
+        temperamentAssessment: dogData.temperamentAssessment || '',
       };
       
       addDog(newDog);
