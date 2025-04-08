@@ -1,10 +1,12 @@
 
 import { differenceInYears, differenceInMonths } from "date-fns";
 
-export const calculateAge = (birthdateStr: string | undefined): string => {
-  if (!birthdateStr) return "";
+export const calculateAge = (birthdateInput: string | Date | undefined): string => {
+  if (!birthdateInput) return "";
   
-  const birthdate = new Date(birthdateStr);
+  // Convert to Date if it's a string
+  const birthdate = typeof birthdateInput === 'string' ? new Date(birthdateInput) : birthdateInput;
+  
   if (isNaN(birthdate.getTime())) return "";
   
   const today = new Date();
